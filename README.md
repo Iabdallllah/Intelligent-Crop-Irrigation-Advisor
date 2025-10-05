@@ -1,1 +1,1 @@
-# Intelligent-Crop-Irrigation-System
+# Intelligent-Crop-Irrigation-Advisor
