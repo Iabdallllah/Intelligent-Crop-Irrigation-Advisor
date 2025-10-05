@@ -44,20 +44,30 @@ def main():
     # Clean up any existing Streamlit processes
     kill_streamlit_processes()
     
-    # Get the directory of this script
+    # Get the project root directory (two levels up from this script)
     script_dir = Path(__file__).parent
-    os.chdir(script_dir)
+    project_root = script_dir.parent.parent
+    app_dir = script_dir  # Current directory has the app.py
     
-    # Check if virtual environment exists
-    venv_python = script_dir / ".venv" / "Scripts" / "python.exe"
-    venv_streamlit = script_dir / ".venv" / "Scripts" / "streamlit.exe"
+    # Change to app directory
+    os.chdir(app_dir)
+    
+    # Check if virtual environment exists in project root
+    venv_python = project_root / ".venv" / "Scripts" / "python.exe"
     
     if not venv_python.exists():
         print("❌ Virtual environment not found!")
-        print("Please run: python -m venv .venv")
+        print(f"Looking for: {venv_python}")
+        print("Please ensure virtual environment is set up in project root")
         return
     
-    if not venv_streamlit.exists():
+    # Test if streamlit is installed
+    try:
+        test_result = subprocess.run([
+            str(venv_python), "-c", "import streamlit; print('Streamlit found')"
+        ], capture_output=True, text=True, check=True)
+        print("✅ Streamlit is available")
+    except subprocess.CalledProcessError:
         print("❌ Streamlit not found in virtual environment!")
         print("Please run: pip install streamlit")
         return
@@ -76,9 +86,10 @@ def main():
     # Start Streamlit app first
     process = None
     try:
-        # Start Streamlit in background
+        # Start Streamlit using python -m streamlit
         process = subprocess.Popen([
-            str(venv_streamlit),
+            str(venv_python),
+            "-m", "streamlit",
             "run",
             "app.py",
             f"--server.port={port}",
