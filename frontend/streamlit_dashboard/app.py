@@ -16,7 +16,9 @@ st.markdown("### Get intelligent crop recommendations based on soil and environm
 # Load the model
 @st.cache_resource
 def load_model():
-    return joblib.load("crop_model.pkl")
+    # Load model from correct path (relative to project root)
+    model_path = "../../models/crop recommendation/crop_model.pkl"
+    return joblib.load(model_path)
 
 model = load_model()
 
