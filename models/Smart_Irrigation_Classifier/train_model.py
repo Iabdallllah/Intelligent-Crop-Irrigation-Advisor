@@ -25,7 +25,34 @@ important_features = [
     'moisture_temp_ratio', 'evapo_ratio', 'rain_effect', 'moisture_change_rate',
     'temp_scaled', 'npk_balance', 'wind_ratio'
 ]
-
+# Load dataset from correct path
+try:
+    # Try different possible paths
+    data_paths = [
+        "../../data/Final_irregation_optimization_data.csv",  # From Smart_Irrigation_Classifier folder
+        "../data/Final_irregation_optimization_data.csv",  # From models folder
+        "data/Final_irregation_optimization_data.csv",  # From root
+        "Final_irregation_optimization_data.csv"  # Same folder
+    ]
+    
+    merged_df = None
+    for path in data_paths:
+        try:
+            merged_df = pd.read_csv(path)
+            print(f"✅ Data loaded successfully from: {path}")
+            print(f"📊 Shape: {merged_df.shape}")
+            print(f"📋 Columns: {list(merged_df.columns)}")
+            break
+        except FileNotFoundError:
+            print(f"❌ File not found at: {path}")
+            continue
+    
+    if merged_df is None:
+        raise FileNotFoundError("Data file not found in any expected location!")
+        
+except Exception as e:
+    print(f"❌ Error loading data: {e}")
+    exit(1)
 # ===============================
 # 🧠 SPLIT DATA INTO X AND y
 # ===============================
