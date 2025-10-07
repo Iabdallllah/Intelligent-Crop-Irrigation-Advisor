@@ -16,11 +16,41 @@ st.markdown("### Get intelligent crop recommendations based on soil and environm
 # Load the model
 @st.cache_resource
 def load_model():
-    # Load model from correct path (relative to project root)
-    model_path = "../../models/crop recommendation/crop_model.pkl"
-    return joblib.load(model_path)
+    import os
+    # Try different paths for local vs deployed environments
+    possible_paths = [
+        "../../models/crop recommendation/crop_model.pkl",  # Local development
+        "models/crop recommendation/crop_model.pkl",        # Deployed from root
+        "crop_model.pkl",                                   # If model is in same folder
+        "./models/crop recommendation/crop_model.pkl"       # Alternative path
+    ]
+    
+    for model_path in possible_paths:
+        if os.path.exists(model_path):
+            try:
+                return joblib.load(model_path)
+            except Exception as e:
+                st.error(f"Error loading model from {model_path}: {e}")
+                continue
+    
+    # If no model found, show error with helpful info
+    st.error("❌ Model file not found! Please ensure crop_model.pkl is included in the deployment.")
+    st.info("Current working directory: " + os.getcwd())
+    st.info("Available files: " + str(os.listdir(".")))
+    return None
 
 model = load_model()
+
+# Check if model loaded successfully
+if model is None:
+    st.error("🚨 **Model Loading Failed**")
+    st.markdown("""
+    ### To fix this issue:
+    1. **For Streamlit Cloud**: Make sure the `models/` folder is included in your repository
+    2. **For local deployment**: Ensure you've trained the model by running `model_training.py`
+    3. **Check file structure**: The model file should be at `models/crop recommendation/crop_model.pkl`
+    """)
+    st.stop()  # Stop execution if model can't be loaded
 
 # Create two columns
 col1, col2 = st.columns([1, 2])
