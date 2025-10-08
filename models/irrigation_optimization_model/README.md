@@ -130,11 +130,6 @@ python scripts/model_analysis.py
 
 ---
 
-## 🧾 License
-
-This project is licensed under the **MIT License** — you’re free to use, modify, and distribute it with attribution.
-
----
 
 ## 🌟 Acknowledgments
 
