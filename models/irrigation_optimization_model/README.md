@@ -32,21 +32,21 @@ It combines **environmental sensing, data processing, and ML prediction** to aut
 
 smart_irrigation_system_ml/                                                                                                                                           
 │
-├── data/
-│   ├── Final_irregation_optimization_data_m2.csv
-│   └── new_irrigation_data.csv
+├── data/                                                                                                                                                                  
+│   ├── Final_irregation_optimization_data_m2.csv                                                                                                                                                                                          
+│   └── new_irrigation_data.csv                                                                                                                                                                  
 │
-├── models/
-│   └── catboost_irrigation_model.pkl
+├── models/                                                                                                                                                                  
+│   └── catboost_irrigation_model.pkl                                                                                                                                                                  
 │
-├── scripts/
-│   ├── train.py              # Train the CatBoost model
-│   ├── test.py               # Predict on new data
-│   └── model_analysis.py     # Analyze and visualize model features
+├── scripts/                                                                                                                                                                  
+│   ├── train.py              # Train the CatBoost model                                                                                                                                                                  
+│   ├── test.py               # Predict on new data                                                                                                                                                                  
+│   └── model_analysis.py     # Analyze and visualize model features                                                                                                                                                                  
 │
-├── outputs/
-│   ├── predicted_irrigation_results.csv
-│   └── irrigation_npk_scientific_safe.csv
+├── outputs/                                                                                                                                                                  
+│   ├── predicted_irrigation_results.csv                                                                                                                                                                  
+│   └── irrigation_npk_scientific_safe.csv                                                                                                                                                                  
 │
 └── README.md
 
