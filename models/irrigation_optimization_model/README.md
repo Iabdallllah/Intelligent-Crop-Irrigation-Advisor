@@ -30,7 +30,7 @@ It combines **environmental sensing, data processing, and ML prediction** to aut
 
 ## 🗂️ Project Structure
 
-smart_irrigation_system_ml/
+smart_irrigation_system_ml/                                                                                                                                           
 │
 ├── data/
 │   ├── Final_irregation_optimization_data_m2.csv
