@@ -10,7 +10,12 @@ import joblib
 # ===============================
 # 📂 LOAD DATA
 # ===============================
-merged_df = pd.read_csv('Final_irregation_optimization_data_m2.csv')
+import os
+# Get the absolute path to the data file
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+data_path = os.path.join(project_root, 'data', 'Final_irregation_optimization_data_m2.csv')
+print(f"Loading data from: {data_path}")
+merged_df = pd.read_csv(data_path)
 
 # ===============================
 # 🎯 DEFINE FEATURES AND TARGET
