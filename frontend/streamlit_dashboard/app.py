@@ -255,9 +255,11 @@ with col2:
                 confidence = crop_model.predict_proba(input_data).max()
                 
                 # Validation check - if confidence is too low, return 0/failure
-                if confidence < 0.5:  # Less than 50% confidence
+                if confidence < 0.8:  # Less than 80% confidence
                     st.error("❌ **LOW CONFIDENCE PREDICTION**")
+                    st.warning("⚠️ **Please review your inputs** - The model confidence is below 80%")
                     st.info("🔄 **Returned Value**: 0 (Low confidence fail-safe)")
+                    st.info("💡 **Suggestion**: Check soil parameters (N, P, K, pH) and environmental conditions")
                 else:
                     # Display results
                     st.success(f"🌱 **Recommended Crop: {prediction.title()}**")
@@ -322,9 +324,11 @@ with col2:
                     confidence_text = ""
                 
                 # Validation check
-                if prob and prob < 0.6:  # Less than 60% confidence
+                if prob and prob < 0.8:  # Less than 80% confidence
                     st.error("❌ **LOW CONFIDENCE IRRIGATION DECISION**")
+                    st.warning("⚠️ **Please review your inputs** - The model confidence is below 80%")
                     st.info("🔄 **Returned Value**: 0 (Low confidence fail-safe)")
+                    st.info("💡 **Suggestion**: Verify soil moisture, weather conditions, and nutrient levels")
                 else:
                     if pred == 1 or pred == 'irrigate':
                         st.success(f"💧 **Irrigation Needed**")
