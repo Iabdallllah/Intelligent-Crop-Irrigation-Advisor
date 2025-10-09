@@ -1,88 +1,144 @@
-# 📚 User Guide - Smart Crop Recommendation System
+# 📚 User Guide - Smart Crop & Irrigation Advisor
 
-## 🎯 Getting Started
+## 🎯 Overview
 
-### What is the Crop Recommendation System?
-This system helps farmers and agricultural professionals choose the best crop to plant based on soil and environmental conditions. Simply input your soil parameters and climate data, and get instant, science-based crop recommendations.
+### What is the Smart Crop & Irrigation Advisor?
+This advanced system provides comprehensive agricultural guidance by combining three AI models:
+1. **🌱 Crop Recommendation**: Choose the best crop for your conditions
+2. **💧 Smart Irrigation**: Get intelligent irrigation decisions  
+3. **⚡ Water Optimization**: Calculate optimal irrigation amounts
+
+The system uses modern machine learning with advanced feature engineering to provide accurate, science-based recommendations for farmers and agricultural professionals.
 
 ## 🖥️ Accessing the Application
 
-### Starting the Application
-You have several options to launch the app:
+### Quick Start (Recommended)
+```bash
+# Navigate to project folder and activate environment
+.\.venv\Scripts\activate
 
-#### Option 1: Launcher Script (Recommended)
-1. Navigate to the project folder
-2. Run the launcher:
-   ```bash
-   python launch_app.py
-   ```
-3. Wait for your browser to open automatically
+# Launch the application  
+python -m streamlit run frontend\streamlit_dashboard\app.py --server.port=8503
+```
 
-#### Option 2: VS Code Tasks
+### Alternative Launch Methods
+
+#### VS Code Tasks
 1. Open VS Code in the project folder
 2. Use Command Palette (Ctrl+Shift+P)
-3. Run task: **🌾 Run Crop Recommendation App**
-4. Or use: **🚀 Launch App with Browser**
+3. Type "Tasks: Run Task"
+4. Select: **🌾 Run Crop Recommendation App**
 
-#### Option 3: Manual Start
-1. Open command prompt/terminal
-2. Navigate to project folder
-3. Run:
-   ```bash
-   streamlit run app.py
-   ```
+#### Manual Installation
+```bash
+pip install -r requirements.txt
+python -m streamlit run frontend\streamlit_dashboard\app.py
+```
 
-### Accessing the Web Interface
-Once started, open your browser and go to:
-- **Local Access**: http://localhost:8501 (or displayed port)
-- **Network Access**: Available to other devices on your network
+### Accessing the Interface
+- **Local URL**: http://localhost:8503 (or displayed port)
+- **Network URL**: Accessible to other devices on your network
+- **Browser**: Works on Chrome, Firefox, Safari, Edge
 
-## 📊 Using the Application
+## � Using the Modern 2-Column Interface
 
-### Step 1: Enter Soil Data
-In the left panel, you'll find input fields for soil nutrients:
+### Interface Layout
+The application features a clean, modern design:
+- **📊 Left Column**: All input parameters and data entry
+- **🎯 Right Column**: Results, recommendations, and irrigation decisions
 
-#### Soil Nutrients (NPK)
-- **🟤 Nitrogen (N)**: 0-200
-  - Essential for leaf growth and protein synthesis
-  - Higher values promote vegetative growth
+### Step 1: Enter Soil Nutrients (NPK)
+In the left panel, start with soil nutrients:
+
+#### Essential Nutrients
+- **🟤 Nitrogen (N)**: 0-200 mg/kg
+  - Promotes leaf growth and protein synthesis
+  - Higher values support leafy crops like rice, maize
   
-- **🟠 Phosphorus (P)**: 0-200
-  - Important for root development and flowering
-  - Critical during early plant growth
+- **🟠 Phosphorus (P)**: 0-200 mg/kg
+  - Critical for root development and flowering
+  - Important for fruiting crops and legumes
   
-- **🟡 Potassium (K)**: 0-200
+- **🟡 Potassium (K)**: 0-200 mg/kg
   - Enhances disease resistance and fruit quality
-  - Important for water regulation
+  - Essential for crop stress tolerance
 
-### Step 2: Enter Environmental Data
+### Step 2: Environmental Conditions
 
 #### Climate Parameters
 - **🌡️ Temperature (°C)**: 0-50°C
-  - Average temperature during growing season
-  - Different crops have different temperature preferences
+  - Average growing season temperature
+  - Tropical crops prefer 25-35°C, temperate crops 15-25°C
   
 - **💧 Humidity (%)**: 0-100%
-  - Relative humidity percentage
-  - Affects disease susceptibility and water needs
+  - Relative humidity affects disease and water needs
+  - High humidity crops: rice, banana; Low humidity: cotton, chickpea
   
 - **⚗️ Soil pH**: 0-14
   - Soil acidity/alkalinity level
-  - Most crops prefer pH 6.0-7.5
+  - Most crops prefer 6.0-7.5 (neutral to slightly acidic)
   
 - **🌧️ Rainfall (mm)**: 0-300mm
-  - Annual or seasonal rainfall amount
-  - Critical for water-dependent crops
+  - Annual or seasonal precipitation
+  - Rice needs >150mm, drought crops <50mm
 
-### Step 3: Get Recommendation
-1. Click the **🚀 Get Recommendation** button
-2. View your results in the right panel:
-   - **Recommended Crop**: The best crop for your conditions
-   - **Confidence Level**: How certain the model is (aim for >90%)
-   - **Crop Information**: Details about the recommended crop
+### Step 3: Advanced Irrigation Parameters
 
-### Step 4: Review Input Summary
-Check the **📋 Input Summary** table to verify your entered values.
+#### Soil & Weather Conditions
+- **💧 Soil Moisture**: 0-1.0 (volumetric content)
+  - Current soil water content
+  - 0.3-0.4 optimal for most crops
+  
+- **🌬️ Wind Speed**: 0-50 km/h
+  - Affects evapotranspiration rates
+  - Higher wind increases water needs
+  
+- **🌡️ Pressure**: 80-110 kPa
+  - Atmospheric pressure influences evaporation
+  - Standard: ~101.3 kPa
+
+### Step 4: Get Comprehensive Results
+The right column shows results in order of priority:
+
+#### 🌱 Crop Recommendation (First)
+1. Click **🚀 Get Crop Recommendation**
+2. View results:
+   - **Recommended Crop**: Best crop for your conditions
+   - **Confidence Level**: Model certainty (aim for >90%)
+   - **Crop Information**: Detailed description and requirements
+
+#### 💧 Smart Irrigation Decision (Second)  
+1. Click **🔍 Smart Irrigation Check**
+2. Results show:
+   - **Irrigation Status**: Needed or not needed
+   - **Confidence Level**: Decision reliability
+   - **Reasoning**: Based on 23 engineered features
+
+#### ⚡ Irrigation Optimization (Third)
+1. Click **⚡ Irrigation Optimization**
+2. Get precise amounts:
+   - **Optimal Irrigation**: Exact units needed
+   - **Requirement Level**: Low/Moderate/High classification
+   - **Efficiency**: Based on 31 advanced features
+
+### Step 5: Review Input Summary
+Check the bottom **📋 Input Summary** table to verify all parameters are correct.
+
+## 🧠 Understanding the AI System
+
+### Advanced Feature Engineering
+The system creates sophisticated features from your inputs:
+
+#### For Irrigation Decisions (23 Features)
+- **Basic**: Your direct inputs (N, P, K, climate)
+- **Derived**: NPK ratios, soil saturation, evapotranspiration
+- **Calculated**: Temperature differences, moisture-temperature ratios
+- **Weather**: Rain effects, humidity impacts
+
+#### For Optimization (31 Features)
+- **Extended**: All irrigation features plus wind effects
+- **Advanced**: Pressure impacts, seasonal factors
+- **Complex**: Multi-variable interactions and atmospheric conditions
 
 ## 🌾 Understanding Crop Recommendations
 
@@ -118,11 +174,45 @@ Check the **📋 Input Summary** table to verify your entered values.
 - **🌿 Jute**: High humidity required
 - **☕ Coffee**: Specific climate needs
 
-### Confidence Levels
+### Confidence & Reliability Levels
+
+#### Crop Recommendations
 - **95-100%**: Excellent match, highly recommended
-- **90-94%**: Very good match, recommended
-- **80-89%**: Good match, consider other factors
-- **Below 80%**: Poor match, review inputs
+- **90-94%**: Very good match, recommended  
+- **80-89%**: Good match, consider local factors
+- **50-79%**: Moderate match, verify inputs
+- **<50%**: Poor match, system returns fail-safe value (0)
+
+#### Irrigation Decisions
+- **90-100%**: Very reliable decision
+- **80-89%**: Reliable decision
+- **60-79%**: Acceptable decision  
+- **<60%**: Low confidence, system returns fail-safe value (0)
+
+#### Optimization Results
+- **Valid Range**: 0-100 irrigation units
+- **Validation**: Automatic range checking
+- **Classifications**:
+  - 0-10 units: Low irrigation requirement 💧
+  - 10-30 units: Moderate irrigation requirement 💧💧
+  - 30+ units: High irrigation requirement 💧💧💧
+
+## 🚨 Advanced Fail-Safe System
+
+### Multi-Layer Protection
+The system includes comprehensive protection:
+
+1. **Model Loading Validation**: Checks all 3 AI models on startup
+2. **Input Range Validation**: Ensures realistic parameter values
+3. **Prediction Confidence**: Minimum thresholds for reliable results
+4. **Exception Handling**: Graceful handling of any errors
+5. **User Feedback**: Clear explanations of any issues
+
+### What Happens During Failures?
+- **Low Confidence**: Returns 0 with explanation
+- **Model Errors**: Returns 0 with clear error message
+- **Invalid Inputs**: Prompts for correction
+- **System Status**: Always shows current operational state
 
 ## 💡 Tips for Best Results
 
@@ -143,37 +233,44 @@ Check the **📋 Input Summary** table to verify your entered values.
 
 ## 🚨 Troubleshooting
 
-### Common Issues
+### Common Issues & Solutions
 
-#### App Won't Start
-**Problem**: Error messages when launching
+#### Application Won't Start
+**Problem**: Error messages during launch
 **Solutions**:
-1. Ensure Python is installed (3.11+)
-2. Check virtual environment is activated
-3. Install requirements: `pip install -r requirements.txt`
-4. Try using VS Code tasks instead of direct script execution
+1. Ensure Python 3.11+ is installed
+2. Activate virtual environment: `.\.venv\Scripts\activate`
+3. Install dependencies: `pip install -r requirements.txt`
+4. Check port availability (try different port: `--server.port=8504`)
 
-#### Browser Doesn't Open
-**Problem**: App starts but browser doesn't open
+#### Model Loading Failures
+**Problem**: "System Status: FAILED" message
 **Solutions**:
-1. Manually navigate to displayed URL
-2. Check firewall settings
-3. Try different browser
-
-#### Multiple Browser Windows
-**Problem**: App opens multiple browser tabs
-**Solutions**:
-1. Use VS Code tasks for better control
-2. Close duplicate tabs manually
-3. Restart the application using `launch_app.py`
+1. Check if all model files exist in `/models/` folders
+2. Verify virtual environment has all packages installed
+3. Clear Streamlit cache and restart application
+4. Check console for specific model loading errors
 
 #### Low Confidence Predictions
-**Problem**: Confidence below 80%
+**Problem**: System returns 0 with low confidence message
 **Solutions**:
-1. Verify input values are accurate
-2. Check if values are within normal ranges
-3. Consider that your conditions might be unusual
-4. Consult agricultural extension services
+1. Verify all input values are within realistic ranges
+2. Check if parameter combinations are unusual for your region
+3. Try inputs from successful local farms
+4. Consider that your conditions might need specialized crops
+
+#### Interface Issues
+**Problem**: Layout problems or broken displays
+**Solutions**:
+1. Refresh browser page (F5)
+2. Clear browser cache
+3. Try different browser (Chrome recommended)
+4. Check if port is blocked by firewall
+
+### System Status Indicators
+- **✅ OPERATIONAL**: All models loaded successfully
+- **🚨 FAILED**: One or more models failed to load
+- **⚠️ FAIL-SAFE MODE**: System returns safe default values
 
 ### Getting Help
 1. **Check Documentation**: Review files in `docs/` folder
@@ -214,6 +311,7 @@ Use the system as one tool among many:
 - Build historical database
 
 ---
-**User Guide Version**: 1.0.0  
-**Last Updated**: October 5, 2025  
-**For Technical Support**: See README.md
+**User Guide Version**: 2.0.0  
+**Last Updated**: October 9, 2025  
+**Application Version**: Clean 2-Column Interface with Advanced AI Integration  
+**For Technical Support**: See README.md and model documentation

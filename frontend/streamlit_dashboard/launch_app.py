@@ -64,13 +64,23 @@ def main():
     # Test if streamlit is installed
     try:
         test_result = subprocess.run([
-            str(venv_python), "-c", "import streamlit; print('Streamlit found')"
+            str(venv_python), "-c", "import streamlit; import numpy; import catboost; print('All packages found')"
         ], capture_output=True, text=True, check=True)
-        print("✅ Streamlit is available")
-    except subprocess.CalledProcessError:
-        print("❌ Streamlit not found in virtual environment!")
-        print("Please run: pip install streamlit")
-        return
+        print("✅ All required packages are available")
+    except subprocess.CalledProcessError as e:
+        print("❌ Required packages not found in virtual environment!")
+        print(f"Error: {e.stderr}")
+        print("Installing missing packages...")
+        try:
+            # Install required packages
+            subprocess.run([
+                str(venv_python), "-m", "pip", "install", 
+                "numpy>=1.26.0", "catboost>=1.2", "scikit-learn>=1.3.0", "joblib", "pandas", "streamlit"
+            ], check=True)
+            print("✅ Packages installed successfully")
+        except subprocess.CalledProcessError:
+            print("❌ Failed to install packages")
+            return
     
     # Find a free port
     port = find_free_port(8501)
