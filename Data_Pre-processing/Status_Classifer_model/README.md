@@ -1,4 +1,4 @@
-# 🌾 Status Classifer 
+# 🌾 Status Classifier 
 
 ## 📘 Overview
 
