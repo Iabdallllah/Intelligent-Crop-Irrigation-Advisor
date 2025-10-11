@@ -1,16 +1,9 @@
 ## 🌾 Intelligent Crop Irrigation Advisor
 
-### 📘 Overview
-
-This project focuses on **data-driven irrigation and fertilizer optimization** using machine learning. It combines **environmental, soil, and weather data** to recommend the optimal water amount (in mm) and balanced NPK (Nitrogen, Phosphorus, Potassium) fertilizer values for different crops.
-
-The model leverages **CatBoost Regression** to predict water requirements scientifically and efficiently, ensuring sustainable irrigation management.
-
----
 
 ### 🧩 Dataset Description
 
-**File:** `Final_irregation_optimization_data_m2.csv`
+**File:** `Final_irregation_optimization_data_m2.csv` We used the data set of the Status Classifer model and add to it more Features 
 
 Each row represents a daily record of soil, crop, and weather conditions with the corresponding irrigation recommendations.
 
