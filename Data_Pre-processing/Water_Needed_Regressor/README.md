@@ -62,5 +62,3 @@ Total Rows: Depends on collected data records.
      * Recommend **NPK values** based on crop, pH, and irrigation level.
    * Updates soil moisture dynamically after each irrigation step.
    * Results stored in `irrigation_npk_scientific_safe.csv`.
-
-That would make it perfect for GitHub.
