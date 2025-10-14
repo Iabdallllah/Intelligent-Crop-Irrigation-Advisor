@@ -7,7 +7,7 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h> // Library for building JSON payload
-#include <WiFiClientSecure.h> // <--- تأكد من وجود هذه المكتبة
+#include <WiFiClientSecure.h> 
 
 // ======================= 1. NETWORK & CLOUD CONFIG =======================
 const char* ssid = "realme 5 Pro";
