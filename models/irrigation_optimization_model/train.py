@@ -6,6 +6,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from catboost import CatBoostRegressor
 import joblib
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
 
 # ===============================
 # 📂 LOAD DATA
@@ -35,6 +38,27 @@ target = 'recommended_water_mm'
 
 X = merged_df[merged_df['status'] == True][features]
 y = merged_df[merged_df['status'] == True][target]
+
+# ===============================
+# 📊 TRAINING DATA VISUALIZATION
+# ===============================
+
+# 1. Feature Distribution Example
+plt.figure(figsize=(7,5))
+plt.hist(merged_df['soil_moisture'], bins=30, color='skyblue', edgecolor='black')
+plt.title('Soil Moisture Distribution')
+plt.xlabel('Soil Moisture')
+plt.ylabel('Frequency')
+plt.tight_layout()
+plt.show()
+
+# 2. Feature Correlation Heatmap
+corr = merged_df[features].corr()
+plt.figure(figsize=(12,10))
+sns.heatmap(corr, annot=True, cmap='coolwarm', fmt='.2f')
+plt.title('Feature Correlation Heatmap')
+plt.tight_layout()
+plt.show()
 
 # ===============================
 # 🧠 SPLIT DATA
@@ -80,3 +104,31 @@ print(f"\n📊 MAE: {mae:.3f}")
 print(f"📉 RMSE: {rmse:.3f}")
 print(f"🎯 R² Score: {r2:.3f}")
 print(f"🔧 Adjusted R²: {adj_r2:.3f}")
+
+# ===============================
+# 📊 DATA VISUALIZATION
+# ===============================
+
+# Predict on test set
+y_pred = model.predict(X_test)
+
+# 1. Actual vs Predicted Scatter Plot
+plt.figure(figsize=(7,5))
+plt.scatter(y_test, y_pred, alpha=0.6, color='royalblue')
+plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--', lw=2)
+plt.xlabel('Actual Water (mm)')
+plt.ylabel('Predicted Water (mm)')
+plt.title('Actual vs Predicted Irrigation Amount')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+# 2. Feature Importance Bar Plot
+importances = model.get_feature_importance()
+indices = np.argsort(importances)[::-1]
+plt.figure(figsize=(9,6))
+plt.barh(np.array(features)[indices], np.array(importances)[indices], color='seagreen')
+plt.xlabel('Importance')
+plt.title('Feature Importance (CatBoost)')
+plt.tight_layout()
+plt.show()

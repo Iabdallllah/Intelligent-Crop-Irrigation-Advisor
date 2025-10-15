@@ -97,8 +97,22 @@ python -m streamlit run frontend\streamlit_dashboard\app.py
 ### Feature Engineering Pipeline
 ```python
 # Irrigation Model (23 features)
-- Basic: soil_moisture, temperature, humidity, pH, N, P, K
-- Derived: evapotranspiration, soil_saturation, NPK_ratios
+# Basic: soil_moisture, temperature, humidity, pH, N, P, K
+# Derived: evapotranspiration, soil_saturation, NPK_ratios
+```
+
+---
+
+## 💧 Hardware & IoT Integration
+
+This project includes a secure IoT pipeline for real-time environmental monitoring and data ingestion:
+
+- **ESP32 Microcontroller**: Reads sensor data (temperature, humidity, rain, water level, soil moisture) and sends it as JSON via MQTT over TLS/SSL.
+- **HiveMQ Cloud Broker**: Secure MQTT broker for device-to-cloud messaging.
+- **FastAPI Service**: Python-based ingestion service subscribes to MQTT topic, authenticates, and stores data in Supabase.
+- **Supabase Database**: PostgreSQL backend for storing and analyzing sensor readings.
+
+For full hardware details, wiring, and deployment steps, see [`hardware/README.md`](hardware/README.md).
 - Weather: temp_diff, rain_effect, moisture_temp_ratio
 
 # Optimization Model (31 features)  
