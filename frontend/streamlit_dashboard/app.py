@@ -3,6 +3,10 @@ import joblib
 import numpy as np
 import pandas as pd
 import os
+from dotenv import load_dotenv
+from supabase import create_client
+import plotly.express as px
+
 
 # Set page configuration
 st.set_page_config(
@@ -11,8 +15,62 @@ st.set_page_config(
     layout="wide"
 )
 
+
+"""Streamlit dashboard for crop recommendation and irrigation advisor with IoT live data."""
+
+# Load environment variables from .env (local) and support Streamlit Cloud secrets
+# First try default .env in current working directory
+load_dotenv()
+# Also try loading .env from the project root (one level above models/frontend folders)
+try:
+    current_file = os.path.abspath(__file__)
+    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file)))
+    env_path = os.path.join(repo_root, '.env')
+    if os.path.exists(env_path):
+        load_dotenv(env_path, override=False)
+except Exception:
+    pass
+
 st.title("🌾 Smart Crop & Irrigation Advisor")
 st.markdown("### Get intelligent crop recommendations and irrigation decisions based on soil and environmental conditions")
+
+# --- IoT Live Data Section ---
+with st.expander("💧 Live Sensor Data (IoT)", expanded=False):
+    st.markdown("Click 'Refresh Data' to fetch latest readings from Supabase")
+    
+    # Supabase credentials (from .env or Streamlit secrets)
+    SUPABASE_URL = os.getenv("SUPABASE_URL") or (st.secrets.get("SUPABASE_URL") if hasattr(st, "secrets") else None)
+    SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY") or (st.secrets.get("SUPABASE_SERVICE_KEY") if hasattr(st, "secrets") else None)
+    
+    if SUPABASE_URL and SUPABASE_KEY:
+        if st.button("🔄 Refresh Data"):
+            with st.spinner("Fetching sensor data..."):
+                try:
+                    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+                    response = supabase.table("Sensor readings").select("*").order("created_at", desc=True).limit(100).execute()
+                    data = response.data
+                    if data:
+                        df = pd.DataFrame(data)
+                        st.subheader("Sensor Data Table")
+                        st.dataframe(df)
+
+                        st.subheader("Sensor Data Visualization")
+                        # رسم بياني لدرجة الحرارة والرطوبة
+                        fig = px.line(df.sort_values("created_at"), x="created_at", y=["temperature", "humidity"], markers=True, title="Temperature & Humidity Over Time")
+                        st.plotly_chart(fig, use_container_width=True)
+
+                        # رسم بياني لمستوى الماء والتربة
+                        if "soil_moisture" in df.columns and "water_level" in df.columns:
+                            fig2 = px.line(df.sort_values("created_at"), x="created_at", y=["soil_moisture", "water_level"], markers=True, title="Soil Moisture & Water Level Over Time")
+                            st.plotly_chart(fig2, use_container_width=True)
+                    else:
+                        st.info("No sensor data found in Supabase.")
+                except Exception as e:
+                    st.error(f"Error fetching data from Supabase: {e}")
+        else:
+            st.info("👆 Click 'Refresh Data' to load IoT sensor readings")
+    else:
+        st.warning("Supabase credentials not found. Please set SUPABASE_URL and SUPABASE_SERVICE_KEY in your environment.")
 
 # Global status tracker for all models
 MODEL_STATUS = {
@@ -21,7 +79,6 @@ MODEL_STATUS = {
     'optimization_model': False
 }
 
-# Load the crop recommendation model
 def load_crop_model():
     import os
     import joblib
@@ -32,15 +89,14 @@ def load_crop_model():
     
     # Direct path to the crop model
     model_path = os.path.join(repo_root, "models", "crop recommendation", "crop_model.pkl")
-    
+
     if os.path.exists(model_path):
         try:
             model = joblib.load(model_path)
             MODEL_STATUS['crop_model'] = True
-            st.success(f"✅ Crop model loaded successfully")
             return model
         except Exception as e:
-            st.error(f"❌ Error loading crop model: {e}")
+            st.error(f"Error loading crop model from {model_path}: {type(e).__name__}: {e}")
             MODEL_STATUS['crop_model'] = False
             return None
     else:
@@ -48,7 +104,6 @@ def load_crop_model():
         MODEL_STATUS['crop_model'] = False
         return None
 
-# Load the smart irrigation model
 def load_irrigation_model():
     import os
     import joblib
@@ -59,15 +114,14 @@ def load_irrigation_model():
     
     # Direct path to the irrigation model
     model_path = os.path.join(repo_root, "models", "Smart_Irrigation_Classifier", "catboost_model.pkl")
-    
+
     if os.path.exists(model_path):
         try:
             model = joblib.load(model_path)
             MODEL_STATUS['irrigation_model'] = True
-            st.success(f"✅ Irrigation model loaded successfully")
             return model
         except Exception as e:
-            st.error(f"❌ Error loading irrigation model: {e}")
+            st.error(f"Error loading irrigation model from {model_path}: {type(e).__name__}: {e}")
             MODEL_STATUS['irrigation_model'] = False
             return None
     else:
@@ -75,7 +129,6 @@ def load_irrigation_model():
         MODEL_STATUS['irrigation_model'] = False
         return None
 
-# Load the irrigation optimization model
 def load_optimization_model():
     import os
     import joblib
@@ -86,15 +139,14 @@ def load_optimization_model():
     
     # Direct path to the optimization model
     model_path = os.path.join(repo_root, "models", "irrigation_optimization_model", "catboost_irrigation_model.pkl")
-    
+
     if os.path.exists(model_path):
         try:
             model = joblib.load(model_path)
             MODEL_STATUS['optimization_model'] = True
-            st.success(f"✅ Optimization model loaded successfully")
             return model
         except Exception as e:
-            st.error(f"❌ Error loading optimization model: {e}")
+            st.error(f"Error loading optimization model from {model_path}: {type(e).__name__}: {e}")
             MODEL_STATUS['optimization_model'] = False
             return None
     else:

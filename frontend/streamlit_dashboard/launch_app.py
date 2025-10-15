@@ -52,35 +52,9 @@ def main():
     # Change to app directory
     os.chdir(app_dir)
     
-    # Check if virtual environment exists in project root
-    venv_python = project_root / ".venv" / "Scripts" / "python.exe"
-    
-    if not venv_python.exists():
-        print("❌ Virtual environment not found!")
-        print(f"Looking for: {venv_python}")
-        print("Please ensure virtual environment is set up in project root")
-        return
-    
-    # Test if streamlit is installed
-    try:
-        test_result = subprocess.run([
-            str(venv_python), "-c", "import streamlit; import numpy; import catboost; print('All packages found')"
-        ], capture_output=True, text=True, check=True)
-        print("✅ All required packages are available")
-    except subprocess.CalledProcessError as e:
-        print("❌ Required packages not found in virtual environment!")
-        print(f"Error: {e.stderr}")
-        print("Installing missing packages...")
-        try:
-            # Install required packages
-            subprocess.run([
-                str(venv_python), "-m", "pip", "install", 
-                "numpy>=1.26.0", "catboost>=1.2", "scikit-learn>=1.3.0", "joblib", "pandas", "streamlit"
-            ], check=True)
-            print("✅ Packages installed successfully")
-        except subprocess.CalledProcessError:
-            print("❌ Failed to install packages")
-            return
+    # Always use current interpreter (miniconda3 projects)
+    python_exe = Path(sys.executable)
+    print(f"🐍 Using interpreter: {python_exe}")
     
     # Find a free port
     port = find_free_port(8501)
@@ -98,7 +72,7 @@ def main():
     try:
         # Start Streamlit using python -m streamlit
         process = subprocess.Popen([
-            str(venv_python),
+            str(python_exe),
             "-m", "streamlit",
             "run",
             "app.py",

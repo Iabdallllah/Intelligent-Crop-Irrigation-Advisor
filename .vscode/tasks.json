@@ -4,7 +4,7 @@
         {
             "label": "🌾 Run Crop Recommendation App",
             "type": "shell",
-            "command": "${workspaceFolder}/.venv/Scripts/streamlit.exe",
+            "command": "C:/Users/HP/miniconda3/envs/projects/Scripts/streamlit.exe",
             "args": [
                 "run",
                 "frontend/streamlit_dashboard/app.py",
@@ -35,7 +35,7 @@
             "command": "cmd",
             "args": [
                 "/c",
-                "start http://localhost:8503 && ${workspaceFolder}/.venv/Scripts/streamlit.exe run frontend/streamlit_dashboard/app.py --server.port=8503"
+                "start http://localhost:8503 && C:/Users/HP/miniconda3/envs/projects/Scripts/streamlit.exe run frontend/streamlit_dashboard/app.py --server.port=8503"
             ],
             "group": "build",
             "presentation": {
