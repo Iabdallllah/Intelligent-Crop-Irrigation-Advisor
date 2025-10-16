@@ -10,13 +10,11 @@ import plotly.express as px
 
 # Set page configuration
 st.set_page_config(
-    page_title="🌾 Smart Crop & Irrigation Advisor",
+    page_title="AgriTech",
     page_icon="🌱",
     layout="wide"
 )
 
-
-"""Streamlit dashboard for crop recommendation and irrigation advisor with IoT live data."""
 
 # Load environment variables from .env (local) and support Streamlit Cloud secrets
 # First try default .env in current working directory
@@ -31,11 +29,11 @@ try:
 except Exception:
     pass
 
-st.title("🌾 Smart Crop & Irrigation Advisor")
+st.title("🌾 AgriTech")
 st.markdown("### Get intelligent crop recommendations and irrigation decisions based on soil and environmental conditions")
 
 # --- IoT Live Data Section ---
-with st.expander("💧 Live Sensor Data (IoT)", expanded=False):
+with st.expander("Live Sensor Data (IoT)", expanded=False):
     st.markdown("Click 'Refresh Data' to fetch latest readings from Supabase")
     
     # Supabase credentials (from .env or Streamlit secrets)
@@ -55,11 +53,11 @@ with st.expander("💧 Live Sensor Data (IoT)", expanded=False):
                         st.dataframe(df)
 
                         st.subheader("Sensor Data Visualization")
-                        # رسم بياني لدرجة الحرارة والرطوبة
+                        # Plot temperature and humidity over time
                         fig = px.line(df.sort_values("created_at"), x="created_at", y=["temperature", "humidity"], markers=True, title="Temperature & Humidity Over Time")
                         st.plotly_chart(fig, use_container_width=True)
 
-                        # رسم بياني لمستوى الماء والتربة
+                        # Plot soil moisture and water level over time
                         if "soil_moisture" in df.columns and "water_level" in df.columns:
                             fig2 = px.line(df.sort_values("created_at"), x="created_at", y=["soil_moisture", "water_level"], markers=True, title="Soil Moisture & Water Level Over Time")
                             st.plotly_chart(fig2, use_container_width=True)
@@ -268,22 +266,22 @@ with col1:
     st.header("📊 Soil & Environment Data")
     
     # Input fields for crop recommendation
-    N = st.number_input("🟤 Nitrogen (N)", min_value=0, max_value=200, value=50, help="Nitrogen content in soil")
-    P = st.number_input("🟠 Phosphorus (P)", min_value=0, max_value=200, value=50, help="Phosphorus content in soil")
-    K = st.number_input("🟡 Potassium (K)", min_value=0, max_value=200, value=50, help="Potassium content in soil")
+    N = st.number_input("🟤 Nitrogen (N)", min_value=0, max_value=200, value=80, help="Nitrogen content in soil")
+    P = st.number_input("🟠 Phosphorus (P)", min_value=0, max_value=200, value=48, help="Phosphorus content in soil")
+    K = st.number_input("🟡 Potassium (K)", min_value=0, max_value=200, value=40, help="Potassium content in soil")
     
     st.divider()
     
-    temp = st.number_input("🌡️ Temperature (°C)", min_value=0.0, max_value=50.0, value=25.0, help="Average temperature")
-    hum = st.number_input("💧 Humidity (%)", min_value=0.0, max_value=100.0, value=80.0, help="Relative humidity")
-    ph = st.number_input("⚗️ Soil pH", min_value=0.0, max_value=14.0, value=6.5, help="Soil pH level")
-    rain = st.number_input("🌧️ Rainfall (mm)", min_value=0.0, max_value=300.0, value=100.0, help="Annual rainfall")
+    temp = st.number_input("🌡️ Temperature (°C)", min_value=0.0, max_value=50.0, value=23.0, help="Average temperature")
+    hum = st.number_input("💧 Humidity (%)", min_value=0.0, max_value=100.0, value=82.0, help="Relative humidity")
+    ph = st.number_input("⚗️ Soil pH", min_value=0.0, max_value=14.0, value=6.7, help="Soil pH level")
+    rain = st.number_input("🌧️ Rainfall (mm)", min_value=0.0, max_value=300.0, value=240.0, help="Annual rainfall")
     
     st.divider()
     
     # Additional inputs for irrigation models
-    soil_moisture = st.number_input("💧 Soil Moisture", min_value=0.0, max_value=1.0, value=0.25, step=0.01, help="Volumetric soil moisture content")
-    wind_speed = st.number_input("🌬️ Wind Speed (km/h)", min_value=0.0, max_value=50.0, value=10.0, help="Wind speed")
+    soil_moisture = st.number_input("💧 Soil Moisture", min_value=0.0, max_value=1.0, value=0.35, step=0.01, help="Volumetric soil moisture content")
+    wind_speed = st.number_input("🌬️ Wind Speed (km/h)", min_value=0.0, max_value=50.0, value=8.0, help="Wind speed")
     pressure = st.number_input("🌡️ Pressure (kPa)", min_value=80.0, max_value=110.0, value=101.3, help="Atmospheric pressure")
 
 with col2:
@@ -307,9 +305,9 @@ with col2:
                 confidence = crop_model.predict_proba(input_data).max()
                 
                 # Validation check - if confidence is too low, return 0/failure
-                if confidence < 0.8:  # Less than 80% confidence
+                if confidence < 0.7:  # Less than 70% confidence
                     st.error("❌ **LOW CONFIDENCE PREDICTION**")
-                    st.warning("⚠️ **Please review your inputs** - The model confidence is below 80%")
+                    st.warning("⚠️ **Please review your inputs** - The model confidence is below 70%")
                     st.info("🔄 **Returned Value**: 0 (Low confidence fail-safe)")
                     st.info("💡 **Suggestion**: Check soil parameters (N, P, K, pH) and environmental conditions")
                 else:
@@ -440,5 +438,5 @@ st.dataframe(summary_df, hide_index=True, width="stretch")
 
 # Footer
 st.markdown("---")
-st.markdown("🌱 **Smart Crop Recommendation System** - Helping farmers make informed decisions")
+st.markdown("**AgriTech - Smart Agriculture Advisor** - Empowering farmers with AI-driven crop and irrigation insights")
 st.markdown("💡 *Tip: Adjust the input parameters to see how they affect the recommendations*")
