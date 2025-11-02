@@ -32,23 +32,6 @@ except Exception:
 st.title("🌾 AgriTech")
 st.markdown("### Get intelligent crop recommendations and irrigation decisions based on soil and environmental conditions")
 
-# --- Custom CSS to improve UI ---
-st.markdown(
-    """
-    <style>
-    /* Page padding and max width */
-    .main .block-container{padding-top:1rem; padding-left:2rem; padding-right:2rem}
-    /* Headings */
-    h1 {font-family: 'Segoe UI', Roboto, sans-serif}
-    /* Make metric cards slightly larger */
-    .stMetric {padding: 0.75rem 1rem}
-    /* Buttons */
-    div.stButton > button {border-radius: 8px}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
 # --- IoT Live Data Section ---
 with st.expander("Live Sensor Data (IoT)", expanded=False):
     st.markdown("Click 'Refresh Data' to fetch latest readings from Supabase")
@@ -94,7 +77,6 @@ MODEL_STATUS = {
     'optimization_model': False
 }
 
-@st.cache_resource
 def load_crop_model():
     import os
     import joblib
@@ -108,21 +90,6 @@ def load_crop_model():
 
     if os.path.exists(model_path):
         try:
-            # Detect Git LFS pointer files (they contain the LFS pointer text instead of binary)
-            try:
-                with open(model_path, 'r', encoding='utf-8') as fh:
-                    first = fh.readline()
-                    if first.startswith('version https://git-lfs.github.com/spec/v1'):
-                        st.error(
-                            f"❌ Crop model at {model_path} appears to be a Git LFS pointer file (not the actual model).\n"
-                            "Please install Git LFS and run `git lfs pull` in the repository, or place the real .pkl file at this path."
-                        )
-                        MODEL_STATUS['crop_model'] = False
-                        return None
-            except Exception:
-                # If reading as text fails, proceed to try loading as a pickle/binary
-                pass
-
             model = joblib.load(model_path)
             MODEL_STATUS['crop_model'] = True
             return model
@@ -135,7 +102,6 @@ def load_crop_model():
         MODEL_STATUS['crop_model'] = False
         return None
 
-@st.cache_resource
 def load_irrigation_model():
     import os
     import joblib
@@ -149,19 +115,6 @@ def load_irrigation_model():
 
     if os.path.exists(model_path):
         try:
-            try:
-                with open(model_path, 'r', encoding='utf-8') as fh:
-                    first = fh.readline()
-                    if first.startswith('version https://git-lfs.github.com/spec/v1'):
-                        st.error(
-                            f"❌ Irrigation model at {model_path} appears to be a Git LFS pointer file (not the actual model).\n"
-                            "Please install Git LFS and run `git lfs pull` in the repository, or place the real .pkl file at this path."
-                        )
-                        MODEL_STATUS['irrigation_model'] = False
-                        return None
-            except Exception:
-                pass
-
             model = joblib.load(model_path)
             MODEL_STATUS['irrigation_model'] = True
             return model
@@ -174,7 +127,6 @@ def load_irrigation_model():
         MODEL_STATUS['irrigation_model'] = False
         return None
 
-@st.cache_resource
 def load_optimization_model():
     import os
     import joblib
@@ -188,19 +140,6 @@ def load_optimization_model():
 
     if os.path.exists(model_path):
         try:
-            try:
-                with open(model_path, 'r', encoding='utf-8') as fh:
-                    first = fh.readline()
-                    if first.startswith('version https://git-lfs.github.com/spec/v1'):
-                        st.error(
-                            f"❌ Optimization model at {model_path} appears to be a Git LFS pointer file (not the actual model).\n"
-                            "Please install Git LFS and run `git lfs pull` in the repository, or place the real .pkl file at this path."
-                        )
-                        MODEL_STATUS['optimization_model'] = False
-                        return None
-            except Exception:
-                pass
-
             model = joblib.load(model_path)
             MODEL_STATUS['optimization_model'] = True
             return model
@@ -320,109 +259,38 @@ def check_system_status():
 # Check system status
 system_operational = check_system_status()
 
-# Sidebar: inputs and presets (keeps main area cleaner)
-default_inputs = {
-    'N': 80, 'P': 48, 'K': 40,
-    'temp': 23.0, 'hum': 82.0, 'ph': 6.7, 'rain': 240.0,
-    'soil_moisture': 0.35, 'wind_speed': 8.0, 'pressure': 101.3
-}
-
-# Ensure session_state key exists, but read defaults into a local `inputs` first
-if 'inputs' not in st.session_state:
-    st.session_state['inputs'] = default_inputs.copy()
-
-# Use a local snapshot to avoid KeyError during widget default evaluation
-inputs = st.session_state.get('inputs', default_inputs)
-
-with st.sidebar:
-    st.header("🧭 Inputs & Presets")
-    preset = st.selectbox("Choose preset", ["Default", "Rice field (humid)", "Dryland (low rain)", "Custom"])
-
-    with st.form("input_form"):
-        N_in = st.number_input("🟤 Nitrogen (N)", min_value=0, max_value=200, value=inputs['N'])
-        P_in = st.number_input("🟠 Phosphorus (P)", min_value=0, max_value=200, value=inputs['P'])
-        K_in = st.number_input("🟡 Potassium (K)", min_value=0, max_value=200, value=inputs['K'])
-
-        st.divider()
-
-        temp_in = st.number_input("🌡️ Temperature (°C)", min_value=0.0, max_value=50.0, value=inputs['temp'])
-        hum_in = st.number_input("💧 Humidity (%)", min_value=0.0, max_value=100.0, value=inputs['hum'])
-        ph_in = st.number_input("⚗️ Soil pH", min_value=0.0, max_value=14.0, value=inputs['ph'])
-        rain_in = st.number_input("🌧️ Rainfall (mm)", min_value=0.0, max_value=300.0, value=inputs['rain'])
-
-        st.divider()
-
-        soil_moisture_in = st.number_input("💧 Soil Moisture (0-1)", min_value=0.0, max_value=1.0, value=inputs['soil_moisture'], step=0.01)
-        wind_speed_in = st.number_input("🌬️ Wind Speed (km/h)", min_value=0.0, max_value=50.0, value=inputs['wind_speed'])
-        pressure_in = st.number_input("🌡️ Pressure (kPa)", min_value=80.0, max_value=110.0, value=inputs['pressure'])
-
-        submitted = st.form_submit_button("Apply inputs")
-
-    # Quick preset application
-    if preset != "Custom":
-        if st.button("Apply preset"):
-            if preset == "Rice field (humid)":
-                ps = {'N': 60, 'P': 40, 'K': 35, 'temp': 28.0, 'hum': 88.0, 'ph': 6.5, 'rain': 300.0, 'soil_moisture': 0.6, 'wind_speed': 5.0, 'pressure': 101.0}
-            elif preset == "Dryland (low rain)":
-                ps = {'N': 30, 'P': 20, 'K': 15, 'temp': 32.0, 'hum': 30.0, 'ph': 7.0, 'rain': 50.0, 'soil_moisture': 0.15, 'wind_speed': 12.0, 'pressure': 101.5}
-            else:
-                ps = {'N': 80, 'P': 48, 'K': 40, 'temp': 23.0, 'hum': 82.0, 'ph': 6.7, 'rain': 240.0, 'soil_moisture': 0.35, 'wind_speed': 8.0, 'pressure': 101.3}
-            st.session_state['inputs'] = ps
-            st.experimental_rerun()
-
-    if submitted:
-        st.session_state['inputs'] = {
-            'N': N_in, 'P': P_in, 'K': K_in,
-            'temp': temp_in, 'hum': hum_in, 'ph': ph_in, 'rain': rain_in,
-            'soil_moisture': soil_moisture_in, 'wind_speed': wind_speed_in, 'pressure': pressure_in
-        }
-        st.success("Inputs applied")
-
-# Create two columns layout for main area
+# Create two columns layout
 col1, col2 = st.columns([1, 1])
 
-# Read current inputs from session state for use in predictions
-vals = st.session_state['inputs']
-N = vals['N']
-P = vals['P']
-K = vals['K']
-temp = vals['temp']
-hum = vals['hum']
-ph = vals['ph']
-rain = vals['rain']
-soil_moisture = vals['soil_moisture']
-wind_speed = vals['wind_speed']
-pressure = vals['pressure']
-
 with col1:
-    st.header("📊 Soil & Environment Snapshot")
-
-    # Top metrics
-    m1, m2, m3 = st.columns(3)
-    m1.metric("🌡 Temperature", f"{temp} °C")
-    m2.metric("💧 Humidity", f"{hum} %")
-    m3.metric("⚗ pH", f"{ph}")
-
+    st.header("📊 Soil & Environment Data")
+    
+    # Input fields for crop recommendation
+    N = st.number_input("🟤 Nitrogen (N)", min_value=0, max_value=200, value=80, help="Nitrogen content in soil")
+    P = st.number_input("🟠 Phosphorus (P)", min_value=0, max_value=200, value=48, help="Phosphorus content in soil")
+    K = st.number_input("🟡 Potassium (K)", min_value=0, max_value=200, value=40, help="Potassium content in soil")
+    
     st.divider()
-
-    # NPK bar chart
-    npk_df = pd.DataFrame({"nutrient": ["N", "P", "K"], "value": [N, P, K]})
-    fig_npk = px.bar(npk_df, x="nutrient", y="value", text="value", title="NPK Levels")
-    fig_npk.update_traces(marker_color=["#8B4513", "#FFA500", "#FFD700"]) 
-    st.plotly_chart(fig_npk, use_container_width=True)
-
-    # Soil moisture gauge (simple pie as indicator)
-    sm_df = pd.DataFrame({"segment": ["Moisture", "Dry"], "value": [soil_moisture, max(0, 1 - soil_moisture)]})
-    fig_sm = px.pie(sm_df, names="segment", values="value", title="Soil Moisture", color_discrete_sequence=["#00A2A8", "#F0E68C"]) 
-    st.plotly_chart(fig_sm, use_container_width=True)
+    
+    temp = st.number_input("🌡️ Temperature (°C)", min_value=0.0, max_value=50.0, value=23.0, help="Average temperature")
+    hum = st.number_input("💧 Humidity (%)", min_value=0.0, max_value=100.0, value=82.0, help="Relative humidity")
+    ph = st.number_input("⚗️ Soil pH", min_value=0.0, max_value=14.0, value=6.7, help="Soil pH level")
+    rain = st.number_input("🌧️ Rainfall (mm)", min_value=0.0, max_value=300.0, value=240.0, help="Annual rainfall")
+    
+    st.divider()
+    
+    # Additional inputs for irrigation models
+    soil_moisture = st.number_input("💧 Soil Moisture", min_value=0.0, max_value=1.0, value=0.35, step=0.01, help="Volumetric soil moisture content")
+    wind_speed = st.number_input("🌬️ Wind Speed (km/h)", min_value=0.0, max_value=50.0, value=8.0, help="Wind speed")
+    pressure = st.number_input("🌡️ Pressure (kPa)", min_value=80.0, max_value=110.0, value=101.3, help="Atmospheric pressure")
 
 with col2:
     st.header("🎯 Recommendations & Decisions")
-
+    
     # === CROP RECOMMENDATION SECTION ===
     st.subheader("🌱 Crop Recommendation")
-
-    if st.button("🚀 Get Crop Recommendation", key="crop_recommendation"):
+    
+    if st.button("🚀 Get Crop Recommendation", type="primary", width="stretch", key="crop_recommendation"):
         if not system_operational:
             st.error("❌ **FAIL-SAFE ACTIVATED**: Cannot provide recommendations due to system failure")
             st.info("🔄 **Returned Value**: 0 (Safe failure mode)")
@@ -431,11 +299,11 @@ with col2:
                 # Create DataFrame with proper column names to avoid warnings
                 feature_names = ['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']
                 input_data = pd.DataFrame([[N, P, K, temp, hum, ph, rain]], columns=feature_names)
-
+                
                 # Make prediction
                 prediction = crop_model.predict(input_data)[0]
                 confidence = crop_model.predict_proba(input_data).max()
-
+                
                 # Validation check - if confidence is too low, return 0/failure
                 if confidence < 0.7:  # Less than 70% confidence
                     st.error("❌ **LOW CONFIDENCE PREDICTION**")
@@ -446,8 +314,8 @@ with col2:
                     # Display results
                     st.success(f"🌱 **Recommended Crop: {prediction.title()}**")
                     st.info(f"🎯 **Confidence: {confidence:.2%}**")
-
-                    # Add crop information (kept same mapping)
+                    
+                    # Add crop information
                     crop_info = {
                         'rice': '🍚 Rice - High water requirement, suitable for humid conditions',
                         'maize': '🌽 Maize - Moderate water requirement, good for moderate climate',
@@ -472,21 +340,20 @@ with col2:
                         'jute': '🌿 Jute - Fiber crop, high humidity required',
                         'coffee': '☕ Coffee - Shade-grown, specific climate needs'
                     }
-
+                    
                     if prediction.lower() in crop_info:
-                        with st.expander("Why this crop?"):
-                            st.info(crop_info[prediction.lower()])
-
+                        st.info(crop_info[prediction.lower()])
+                        
             except Exception as e:
                 st.error(f"❌ **PREDICTION FAILED**: {str(e)}")
                 st.info("🔄 **Returned Value**: 0 (Exception fail-safe)")
-
+    
     # === IRRIGATION DECISIONS SECTION ===
     st.divider()
     st.subheader("💧 Irrigation Decisions")
-
+    
     # Smart Irrigation Classifier
-    if st.button("🔍 Smart Irrigation Check", key="irrigation_check"):
+    if st.button("🔍 Smart Irrigation Check", width="stretch", key="irrigation_check"):
         if not system_operational or not MODEL_STATUS['irrigation_model']:
             st.error("❌ **FAIL-SAFE ACTIVATED**: Irrigation model unavailable")
             st.info("🔄 **Returned Value**: 0 (Safe failure mode)")
@@ -496,17 +363,16 @@ with col2:
                 irrigation_features = create_irrigation_features(
                     soil_moisture, temp, hum, ph, N, P, K, rain
                 )
-
+                
                 pred = irrigation_model.predict(irrigation_features)[0]
-
+                
                 # Get prediction probability if available
                 try:
                     prob = irrigation_model.predict_proba(irrigation_features).max()
                     confidence_text = f" (Confidence: {prob:.2%})"
                 except:
-                    prob = None
                     confidence_text = ""
-
+                
                 # Validation check
                 if prob and prob < 0.8:  # Less than 80% confidence
                     st.error("❌ **LOW CONFIDENCE IRRIGATION DECISION**")
@@ -518,16 +384,16 @@ with col2:
                         st.success(f"💧 **Irrigation Needed**")
                     else:
                         st.info(f"🚫 **No Irrigation Needed**")
-
+                    
                     if prob:
                         st.info(f"🎯 **Confidence: {prob:.2%}**")
-
+                        
             except Exception as e:
                 st.error(f"❌ **IRRIGATION PREDICTION FAILED**: {str(e)}")
                 st.info("🔄 **Returned Value**: 0 (Exception fail-safe)")
-
+    
     # Irrigation Optimization
-    if st.button("⚡ Irrigation Optimization", key="irrigation_optimization"):
+    if st.button("⚡ Irrigation Optimization", width="stretch", key="irrigation_optimization"):
         if not system_operational or not MODEL_STATUS['optimization_model']:
             st.error("❌ **FAIL-SAFE ACTIVATED**: Optimization model unavailable") 
             st.info("🔄 **Returned Value**: 0 (Safe failure mode)")
@@ -537,16 +403,16 @@ with col2:
                 optimization_features = create_optimization_features(
                     soil_moisture, temp, hum, ph, N, P, K, rain
                 )
-
+                
                 optimization_pred = optimization_model.predict(optimization_features)[0]
-
+                
                 # Validation check
                 if optimization_pred < 0 or optimization_pred > 100:  # Unrealistic values
                     st.error("❌ **INVALID OPTIMIZATION RESULT**")
                     st.info("🔄 **Returned Value**: 0 (Validation fail-safe)")
                 else:
                     st.success(f"⚡ **Optimal Irrigation: {optimization_pred:.2f} units**")
-
+                    
                     # Add interpretation
                     if optimization_pred < 10:
                         st.info("💧 Low irrigation requirement")
@@ -554,7 +420,7 @@ with col2:
                         st.info("💧💧 Moderate irrigation requirement") 
                     else:
                         st.info("💧💧💧 High irrigation requirement")
-
+                    
             except Exception as e:
                 st.error(f"❌ **OPTIMIZATION FAILED**: {str(e)}")
                 st.info("🔄 **Returned Value**: 0 (Exception fail-safe)")
