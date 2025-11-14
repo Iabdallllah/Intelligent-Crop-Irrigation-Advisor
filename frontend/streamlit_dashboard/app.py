@@ -303,16 +303,19 @@ with col2:
                 # Make prediction
                 prediction = crop_model.predict(input_data)[0]
                 confidence = crop_model.predict_proba(input_data).max()
-
-                # Always display the predicted crop and the model confidence.
-                # Previously low-confidence predictions were blocked; now we show
-                # the result and the confidence so users can decide what to do.
-                st.success(f"🌱 **Recommended Crop: {prediction.title()}**")
-                st.info(f"🎯 **Confidence: {confidence:.2%}**")
-                if confidence < 0.7:
-                    st.warning("⚠️ **Low confidence prediction — review your inputs if needed.**")
-
-                # Add crop information
+                
+                # Validation check - if confidence is too low, return 0/failure
+                if confidence < 0.7:  # Less than 70% confidence
+                    st.error("❌ **LOW CONFIDENCE PREDICTION**")
+                    st.warning("⚠️ **Please review your inputs** - The model confidence is below 70%")
+                    st.info("🔄 **Returned Value**: 0 (Low confidence fail-safe)")
+                    st.info("💡 **Suggestion**: Check soil parameters (N, P, K, pH) and environmental conditions")
+                else:
+                    # Display results
+                    st.success(f"🌱 **Recommended Crop: {prediction.title()}**")
+                    st.info(f"🎯 **Confidence: {confidence:.2%}**")
+                    
+                    # Add crop information
                     crop_info = {
                         'rice': '🍚 Rice - High water requirement, suitable for humid conditions',
                         'maize': '🌽 Maize - Moderate water requirement, good for moderate climate',
@@ -363,22 +366,27 @@ with col2:
                 
                 pred = irrigation_model.predict(irrigation_features)[0]
                 
-                # Get prediction probability if available and always show result.
+                # Get prediction probability if available
                 try:
                     prob = irrigation_model.predict_proba(irrigation_features).max()
+                    confidence_text = f" (Confidence: {prob:.2%})"
                 except:
-                    prob = None
-
-                # Always present the irrigation decision and the model confidence
-                if pred == 1 or pred == 'irrigate':
-                    st.success("💧 **Irrigation Needed**")
+                    confidence_text = ""
+                
+                # Validation check
+                if prob and prob < 0.8:  # Less than 80% confidence
+                    st.error("❌ **LOW CONFIDENCE IRRIGATION DECISION**")
+                    st.warning("⚠️ **Please review your inputs** - The model confidence is below 80%")
+                    st.info("🔄 **Returned Value**: 0 (Low confidence fail-safe)")
+                    st.info("💡 **Suggestion**: Verify soil moisture, weather conditions, and nutrient levels")
                 else:
-                    st.info("🚫 **No Irrigation Needed**")
-
-                if prob is not None:
-                    st.info(f"🎯 **Confidence: {prob:.2%}**")
-                    if prob < 0.8:
-                        st.warning("⚠️ **Low confidence decision — review inputs if needed.**")
+                    if pred == 1 or pred == 'irrigate':
+                        st.success(f"💧 **Irrigation Needed**")
+                    else:
+                        st.info(f"🚫 **No Irrigation Needed**")
+                    
+                    if prob:
+                        st.info(f"🎯 **Confidence: {prob:.2%}**")
                         
             except Exception as e:
                 st.error(f"❌ **IRRIGATION PREDICTION FAILED**: {str(e)}")
