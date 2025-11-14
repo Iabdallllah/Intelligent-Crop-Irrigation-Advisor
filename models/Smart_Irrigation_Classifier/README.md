@@ -12,17 +12,25 @@ This component contains a trained CatBoost classifier that predicts whether irri
 
 ## Requirements
 
-- Python 3.8+
+- Python 3.11+ recommended
 - See repository `requirements.txt` for pinned package versions. Key libraries include:
   - catboost
   - pandas
   - scikit-learn
   - joblib
-- Git LFS is required to fetch the `*.pkl` objects when cloning the repository. Install via your package manager and run `git lfs install`.
+- Git LFS is required to fetch the `*.pkl` objects when cloning the repository. After cloning run `git lfs install` and then `git lfs pull` to fetch large artifacts.
 
 ## Quick install
 
-Create a virtual environment and install dependencies:
+Create a virtual environment and install dependencies (Linux/macOS):
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Windows (PowerShell):
 
 ```powershell
 python -m venv .venv
@@ -79,9 +87,9 @@ Important: categorical features must be encoded the same way as in the training 
 To retrain the model from data:
 
 1. Inspect the original dataset used (check `train_model.py` for the data path under `data/`).
-2. Run the training script. Example:
+2. Run the training script. Example (bash):
 
-```powershell
+```bash
 python models/Smart_Irrigation_Classifier/train_model.py --output models/Smart_Irrigation_Classifier/catboost_model.pkl
 ```
 
@@ -111,6 +119,8 @@ git push origin main
 ## Contact
 
 For questions about the model, dataset, or training pipeline, see `models/Smart_Irrigation_Classifier/train_model.py` or contact the project maintainer.
+
+Last updated: 2025-11-14
 
 ## See also
 

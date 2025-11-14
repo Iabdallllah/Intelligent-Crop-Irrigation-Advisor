@@ -53,26 +53,29 @@ Crop Recommendation/
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.11+
-- Windows OS (scripts optimized for Windows)
+- Python 3.11+ recommended (works on Linux/macOS/Windows)
 
 ### Installation
 1. Clone or download the project
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+2. Create and activate a virtual environment, then install dependencies:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # on Windows: .\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
 
 ### Running the Application
 
-#### Method 1: Launcher Script (Recommended)
+#### Method 1: Launcher Script (if present)
 ```bash
-python launch_app.py
+# from repo root
+python frontend/streamlit_dashboard/launch_app.py
 ```
 
 #### Method 2: Direct Streamlit
 ```bash
-streamlit run app.py
+python -m streamlit run frontend/streamlit_dashboard/app.py --server.port=8503
 ```
 
 #### Method 3: VS Code Tasks
@@ -153,5 +156,5 @@ For issues and questions:
 - Create an issue in the repository
 
 ---
-**Last Updated**: October 5, 2025
-**Version**: 1.0.0
+**Last Updated**: 2025-11-14
+**Version**: 1.0.1

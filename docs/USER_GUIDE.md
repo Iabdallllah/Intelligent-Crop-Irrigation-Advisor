@@ -14,11 +14,15 @@ The system uses modern machine learning with advanced feature engineering to pro
 
 ### Quick Start (Recommended)
 ```bash
-# Navigate to project folder and activate environment
-.\.venv\Scripts\activate
+# from project root - create and activate a venv (Linux / macOS)
+python -m venv .venv
+source .venv/bin/activate
 
-# Launch the application  
-python -m streamlit run frontend\streamlit_dashboard\app.py --server.port=8503
+# install dependencies
+pip install -r requirements.txt
+
+# Launch the Streamlit application (this repo uses port 8503)
+python -m streamlit run frontend/streamlit_dashboard/app.py --server.port=8503
 ```
 
 ### Alternative Launch Methods
@@ -29,10 +33,12 @@ python -m streamlit run frontend\streamlit_dashboard\app.py --server.port=8503
 3. Type "Tasks: Run Task"
 4. Select: **🌾 Run Crop Recommendation App**
 
-#### Manual Installation
-```bash
+#### Manual / Windows
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-python -m streamlit run frontend\streamlit_dashboard\app.py
+python -m streamlit run frontend/streamlit_dashboard/app.py --server.port=8503
 ```
 
 ### Accessing the Interface
@@ -311,7 +317,7 @@ Use the system as one tool among many:
 - Build historical database
 
 ---
-**User Guide Version**: 2.0.0  
-**Last Updated**: October 9, 2025  
+**User Guide Version**: 2.0.1  
+**Last Updated**: 2025-11-14  
 **Application Version**: Clean 2-Column Interface with Advanced AI Integration  
 **For Technical Support**: See README.md and model documentation
