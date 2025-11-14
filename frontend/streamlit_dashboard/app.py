@@ -338,6 +338,10 @@ with col2:
     show_debug = st.checkbox("🔧 Show raw inputs & model outputs", value=False, key="show_debug")
     # Option to use the dataset-based recommender (falls back to this when dummy model is present)
     use_data_recommender = st.checkbox("📚 Use dataset-based recommender (from data/crop_data.csv)", value=True, key="use_data_recommender")
+    # Short explanation for users: dataset recommender is a k-NN over `data/crop_data.csv`.
+    # It works even if the pickled/trained crop model is missing, but it only
+    # reflects nearest examples from the CSV and may not generalize beyond them.
+    st.info("📚 Dataset recommender: uses k-NN over `data/crop_data.csv`. Works as a fallback when a trained model is unavailable. It returns recommendations based on similar examples in the dataset and may not generalize.")
     
     # === CROP RECOMMENDATION SECTION ===
     st.subheader("🌱 Crop Recommendation")
