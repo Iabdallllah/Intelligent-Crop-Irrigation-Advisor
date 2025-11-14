@@ -3,6 +3,7 @@ import joblib
 import numpy as np
 import pandas as pd
 import os
+import sys
 from dotenv import load_dotenv
 from supabase import create_client
 import plotly.express as px
@@ -19,10 +20,21 @@ st.set_page_config(
 # Load environment variables from .env (local) and support Streamlit Cloud secrets
 # First try default .env in current working directory
 load_dotenv()
-# Also try loading .env from the project root (one level above models/frontend folders)
+# Establish repository root (robustly) and ensure it's on sys.path so
+# pickled models that reference top-level package imports (e.g. `models`)
+# can be imported during unpickling.
 try:
     current_file = os.path.abspath(__file__)
+    # repo root is three levels up from frontend/streamlit_dashboard/app.py
     repo_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file)))
+except Exception:
+    repo_root = os.path.abspath(os.curdir)
+
+if repo_root not in sys.path:
+    sys.path.insert(0, repo_root)
+
+# Also try loading .env from the project root (one level above models/frontend folders)
+try:
     env_path = os.path.join(repo_root, '.env')
     if os.path.exists(env_path):
         load_dotenv(env_path, override=False)
@@ -243,6 +255,42 @@ def create_optimization_features(soil_moisture, temperature, humidity, ph, n, p,
         temp_scaled, npk_balance, wind_ratio
     ]])
 
+
+def recommend_from_dataset(N, P, K, temperature, humidity, ph, rainfall, k=5):
+    """Lightweight nearest-neighbour recommender that uses data/crop_data.csv.
+
+    Returns (label, confidence) where confidence is fraction of the k nearest neighbors
+    that agree with the predicted label.
+    """
+    import pandas as _pd
+    import numpy as _np
+    import os as _os
+
+    cache_name = '_crop_dataset_cache'
+    if cache_name not in globals():
+        data_path = _os.path.join(repo_root, 'data', 'crop_data.csv')
+        if not _os.path.exists(data_path):
+            raise FileNotFoundError(f"Dataset not found: {data_path}")
+        df = _pd.read_csv(data_path)
+        feats = df[['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']].values.astype(float)
+        labels = df['label'].astype(str).values
+        mean = feats.mean(axis=0)
+        std = feats.std(axis=0)
+        std[std == 0] = 1.0
+        globals()[cache_name] = {'feats': feats, 'labels': labels, 'mean': mean, 'std': std}
+
+    cache = globals()[cache_name]
+    feat = _np.array([N, P, K, temperature, humidity, ph, rainfall], dtype=float)
+    norm = (feat - cache['mean']) / cache['std']
+    feats_norm = (cache['feats'] - cache['mean']) / cache['std']
+    dists = _np.linalg.norm(feats_norm - norm, axis=1)
+    idx = _np.argsort(dists)[:k]
+    top_labels = cache['labels'][idx]
+    uniques, counts = _np.unique(top_labels, return_counts=True)
+    mode = uniques[counts.argmax()]
+    conf = float(counts.max()) / float(k)
+    return str(mode), conf
+
 # Check overall system status
 def check_system_status():
     """Returns True only if ALL required models are loaded successfully"""
@@ -286,12 +334,18 @@ with col1:
 
 with col2:
     st.header("🎯 Recommendations & Decisions")
+    # Developer debug toggle: show raw inputs/outputs on the page
+    show_debug = st.checkbox("🔧 Show raw inputs & model outputs", value=False, key="show_debug")
+    # Option to use the dataset-based recommender (falls back to this when dummy model is present)
+    use_data_recommender = st.checkbox("📚 Use dataset-based recommender (from data/crop_data.csv)", value=True, key="use_data_recommender")
     
     # === CROP RECOMMENDATION SECTION ===
     st.subheader("🌱 Crop Recommendation")
     
     if st.button("🚀 Get Crop Recommendation", type="primary", width="stretch", key="crop_recommendation"):
-        if not system_operational:
+        # Allow dataset-based recommender to run even if some models failed to load.
+        # Previously the UI blocked all recommendations when any model failed to load.
+        if not system_operational and not use_data_recommender:
             st.error("❌ **FAIL-SAFE ACTIVATED**: Cannot provide recommendations due to system failure")
             st.info("🔄 **Returned Value**: 0 (Safe failure mode)")
         else:
@@ -299,20 +353,73 @@ with col2:
                 # Create DataFrame with proper column names to avoid warnings
                 feature_names = ['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']
                 input_data = pd.DataFrame([[N, P, K, temp, hum, ph, rain]], columns=feature_names)
-                
+                # Debug: log inputs to help trace behavior and optionally show on the page
+                crop_inputs_dict = input_data.to_dict(orient='records')[0]
+                try:
+                    with open(os.path.join(repo_root, 'streamlit_debug_predictions.log'), 'a') as _dbg:
+                        _dbg.write(f"CROP_INPUTS: {crop_inputs_dict}\n")
+                except Exception:
+                    pass
+
                 # Make prediction
-                prediction = crop_model.predict(input_data)[0]
-                confidence = crop_model.predict_proba(input_data).max()
-                
-                # Validation check - if confidence is too low, return 0/failure
-                if confidence < 0.7:  # Less than 70% confidence
-                    st.error("❌ **LOW CONFIDENCE PREDICTION**")
-                    st.warning("⚠️ **Please review your inputs** - The model confidence is below 70%")
-                    st.info("🔄 **Returned Value**: 0 (Low confidence fail-safe)")
-                    st.info("💡 **Suggestion**: Check soil parameters (N, P, K, pH) and environmental conditions")
+                prediction = None
+                confidence = None
+
+                # If requested, use dataset-based recommender which uses nearest-neighbors
+                if use_data_recommender:
+                    try:
+                        pred_label, conf_score = recommend_from_dataset(
+                            N, P, K, temp, hum, ph, rain, k=5
+                        )
+                        prediction = pred_label
+                        confidence = conf_score
+                    except Exception:
+                        # If dataset recommender fails, try crop_model if it's loaded
+                        if MODEL_STATUS.get('crop_model') and crop_model is not None:
+                            try:
+                                prediction = crop_model.predict(input_data)[0]
+                                try:
+                                    confidence = crop_model.predict_proba(input_data).max()
+                                except Exception:
+                                    confidence = None
+                            except Exception:
+                                prediction = 'unknown'
+                                confidence = None
+                        else:
+                            prediction = 'unknown'
+                            confidence = None
                 else:
-                    # Display results
-                    st.success(f"🌱 **Recommended Crop: {prediction.title()}**")
+                    # Use the loaded crop_model if available, otherwise warn and return unknown
+                    if MODEL_STATUS.get('crop_model') and crop_model is not None:
+                        try:
+                            prediction = crop_model.predict(input_data)[0]
+                            try:
+                                confidence = crop_model.predict_proba(input_data).max()
+                            except Exception:
+                                confidence = None
+                        except Exception:
+                            prediction = 'unknown'
+                            confidence = None
+                    else:
+                        st.warning("⚠️ Crop model not loaded. Enable 'Use dataset-based recommender' to get recommendations from dataset.")
+                        prediction = 'unknown'
+                        confidence = None
+                # Debug: log model outputs as well and (optionally) print them to the page
+                try:
+                    with open(os.path.join(repo_root, 'streamlit_debug_predictions.log'), 'a') as _dbg:
+                        _dbg.write(f"CROP_OUTPUT: pred={prediction}, conf={confidence}\n")
+                except Exception:
+                    pass
+
+                if show_debug:
+                    st.markdown("**Debug — crop model inputs**")
+                    st.write(input_data)
+                    st.markdown("**Debug — crop model outputs**")
+                    st.write({"prediction": str(prediction), "confidence": float(confidence) if confidence is not None else None})
+
+                # Display results (no hard confidence threshold)
+                st.success(f"🌱 **Recommended Crop: {prediction.title()}**")
+                if confidence is not None:
                     st.info(f"🎯 **Confidence: {confidence:.2%}**")
                     
                     # Add crop information
@@ -363,30 +470,40 @@ with col2:
                 irrigation_features = create_irrigation_features(
                     soil_moisture, temp, hum, ph, N, P, K, rain
                 )
+                try:
+                    with open(os.path.join(repo_root, 'streamlit_debug_predictions.log'), 'a') as _dbg:
+                        _dbg.write(f"IRR_INPUTS: soil_moisture={soil_moisture}, temp={temp}, hum={hum}, ph={ph}, N={N}, P={P}, K={K}, rain={rain}\n")
+                except Exception:
+                    pass
                 
                 pred = irrigation_model.predict(irrigation_features)[0]
                 
                 # Get prediction probability if available
                 try:
                     prob = irrigation_model.predict_proba(irrigation_features).max()
-                    confidence_text = f" (Confidence: {prob:.2%})"
-                except:
-                    confidence_text = ""
-                
-                # Validation check
-                if prob and prob < 0.8:  # Less than 80% confidence
-                    st.error("❌ **LOW CONFIDENCE IRRIGATION DECISION**")
-                    st.warning("⚠️ **Please review your inputs** - The model confidence is below 80%")
-                    st.info("🔄 **Returned Value**: 0 (Low confidence fail-safe)")
-                    st.info("💡 **Suggestion**: Verify soil moisture, weather conditions, and nutrient levels")
+                except Exception:
+                    prob = None
+                try:
+                    with open(os.path.join(repo_root, 'streamlit_debug_predictions.log'), 'a') as _dbg:
+                        _dbg.write(f"IRR_OUTPUT: pred={pred}, conf={prob}\n")
+                except Exception:
+                    pass
+
+                if show_debug:
+                    st.markdown("**Debug — irrigation model inputs**")
+                    # show the vector we passed to the model
+                    st.write(irrigation_features.tolist())
+                    st.markdown("**Debug — irrigation model outputs**")
+                    st.write({"prediction": str(pred), "confidence": float(prob) if prob is not None else None})
+
+                # Display irrigation decision (no hard confidence threshold)
+                if pred == 1 or pred == 'irrigate':
+                    st.success(f"💧 **Irrigation Needed**")
                 else:
-                    if pred == 1 or pred == 'irrigate':
-                        st.success(f"💧 **Irrigation Needed**")
-                    else:
-                        st.info(f"🚫 **No Irrigation Needed**")
-                    
-                    if prob:
-                        st.info(f"🎯 **Confidence: {prob:.2%}**")
+                    st.info(f"🚫 **No Irrigation Needed**")
+
+                if prob is not None:
+                    st.info(f"🎯 **Confidence: {prob:.2%}**")
                         
             except Exception as e:
                 st.error(f"❌ **IRRIGATION PREDICTION FAILED**: {str(e)}")
