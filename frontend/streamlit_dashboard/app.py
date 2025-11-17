@@ -294,15 +294,18 @@ def recommend_from_dataset(N, P, K, temperature, humidity, ph, rainfall, k=5):
 
 
 def call_gemini_chat(prompt, context=None, system_instruction=None):
-    """Call the Gemini REST API and return the generated text."""
+    """Call the Gemini REST API and return a dict with text + metadata."""
     api_key = os.getenv("GEMINI_API_KEY") or (st.secrets.get("GEMINI_API_KEY") if hasattr(st, "secrets") else None)
     if not api_key:
         raise ValueError("GEMINI_API_KEY not found. Please set it in .env or Streamlit secrets.")
 
-    endpoint = os.getenv("GEMINI_REST_URL", "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent")
-    headers = {
-        "Content-Type": "application/json"
-    }
+    model_name = (os.getenv("GEMINI_MODEL", "gemini-1.5-flash") or "").strip() or "gemini-1.5-flash"
+    endpoint_override = os.getenv("GEMINI_REST_URL")
+
+    def _build_endpoint(model):
+        return f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+
+    headers = {"Content-Type": "application/json"}
 
     user_parts = [
         {"text": prompt}
@@ -324,14 +327,85 @@ def call_gemini_chat(prompt, context=None, system_instruction=None):
             "parts": [{"text": system_instruction}]
         }
 
-    response = requests.post(
-        endpoint,
-        params={"key": api_key},
-        headers=headers,
-        json=payload,
-        timeout=30
-    )
-    response.raise_for_status()
+    attempt_log = []
+
+    def _make_request(url):
+        try:
+            return requests.post(
+                url,
+                params={"key": api_key},
+                headers=headers,
+                json=payload,
+                timeout=30
+            )
+        except requests.RequestException as req_err:
+            raise RuntimeError(f"Gemini request failed: {req_err}") from req_err
+
+    def _call_model(target_model, reason=None):
+        target_url = endpoint_override or _build_endpoint(target_model)
+        response = _make_request(target_url)
+        attempt_log.append({
+            "model": target_model,
+            "status": getattr(response, "status_code", None),
+            "ok": getattr(response, "ok", False),
+            "reason": reason or ("endpoint override" if endpoint_override else "default")
+        })
+        return response
+
+    response = _call_model(model_name)
+    used_model = model_name
+    fallback_notice = None
+    fallback_used = False
+
+    if not response.ok and response.status_code == 404 and not endpoint_override:
+        fallback_notice_parts = []
+        fallback_chain = []
+
+        if model_name.endswith("-latest"):
+            trimmed = model_name.removesuffix("-latest")
+            if trimmed and trimmed != model_name:
+                fallback_chain.append((trimmed, "'-latest' alias unavailable"))
+
+        for candidate in ["gemini-1.5-flash", "gemini-1.5-pro"]:
+            if candidate and candidate not in {model_name} and all(candidate != existing[0] for existing in fallback_chain):
+                fallback_chain.append((candidate, "Primary model unavailable"))
+
+        for fallback_model, reason in fallback_chain:
+            fallback_notice_parts.append(
+                f"{reason}. Retrying with '{fallback_model}'. Update GEMINI_MODEL to pin a working model."
+            )
+            response = _call_model(fallback_model, reason=reason)
+            if response.ok:
+                used_model = fallback_model
+                fallback_notice = " ".join(fallback_notice_parts)
+                fallback_used = True
+                break
+
+    if not response.ok:
+        try:
+            err_payload = response.json()
+            err_detail = err_payload.get("error", {}).get("message") or err_payload.get("error", {}).get("status")
+        except ValueError:
+            err_detail = response.text
+
+        attempt_summary = ", ".join(
+            f"{entry['model']}→{entry.get('status')}" if entry.get('status') else entry['model']
+            for entry in attempt_log
+        )
+        if attempt_summary:
+            err_detail = f"{err_detail} (attempts: {attempt_summary})"
+
+        extra_hint = ""
+        if response.status_code == 404 and not endpoint_override:
+            if model_name.endswith("-latest") and not fallback_used:
+                extra_hint = " Tip: remove the '-latest' suffix or set GEMINI_REST_URL explicitly."
+            else:
+                extra_hint = " Ensure your GEMINI_MODEL matches an available model for your API key."
+        elif endpoint_override:
+            extra_hint = " Verify GEMINI_REST_URL is correct or unset it to allow automatic fallbacks."
+
+        raise RuntimeError(f"Gemini API error ({response.status_code}): {err_detail}{extra_hint}")
+
     data = response.json()
 
     try:
@@ -342,7 +416,12 @@ def call_gemini_chat(prompt, context=None, system_instruction=None):
     if not text:
         text = "No response returned from Gemini."
 
-    return text
+    return {
+        "text": text,
+        "model_used": used_model,
+        "notice": fallback_notice,
+        "attempts": attempt_log
+    }
 
 # Check overall system status
 def check_system_status():
@@ -632,24 +711,51 @@ with col2:
                         "You are AgriTech Assistant (Gemini) that explains crop and irrigation guidance in concise, practical English. "
                         "Use the provided soil context when relevant and keep responses under 200 words."
                     )
-                    gemini_response = call_gemini_chat(
+                    gemini_result = call_gemini_chat(
                         clean_prompt,
                         context=context_snippet,
                         system_instruction=system_instruction
                     )
 
+                    if isinstance(gemini_result, dict):
+                        gemini_response = gemini_result.get("text", "")
+                        gemini_notice = gemini_result.get("notice")
+                        gemini_model_used = gemini_result.get("model_used")
+                        gemini_attempts = gemini_result.get("attempts")
+                    else:
+                        gemini_response = gemini_result
+                        gemini_notice = None
+                        gemini_model_used = None
+                        gemini_attempts = None
+
                     st.success("✅ Response from Gemini")
                     st.markdown(gemini_response)
 
+                    if gemini_notice:
+                        st.info(gemini_notice)
+                    if gemini_model_used:
+                        st.caption(f"Gemini model: {gemini_model_used}")
+                    if show_debug and gemini_attempts:
+                        st.markdown("**Debug — Gemini attempts**")
+                        st.write(gemini_attempts)
+
                     try:
                         with open(os.path.join(repo_root, 'streamlit_debug_predictions.log'), 'a') as _dbg:
-                            _dbg.write(f"GEMINI_RESPONSE: {gemini_response}\n")
+                            _dbg.write(
+                                f"GEMINI_RESPONSE: model={gemini_model_used}, notice={gemini_notice}, attempts={gemini_attempts}, text={gemini_response}\n"
+                            )
                     except Exception:
                         pass
 
                 except Exception as e:
                     st.error(f"❌ Gemini API error: {str(e)}")
                     st.info("Please verify your API key and internet connection, then try again.")
+                    st.caption("Troubleshooting: set GEMINI_API_KEY in .env, pin GEMINI_MODEL=gemini-1.5-flash, and restart Streamlit after edits.")
+                    try:
+                        with open(os.path.join(repo_root, 'streamlit_debug_predictions.log'), 'a') as _dbg:
+                            _dbg.write(f"GEMINI_ERROR: {str(e)}\n")
+                    except Exception:
+                        pass
 
 # Display input summary at the bottom
 st.subheader("📋 Input Summary")

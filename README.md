@@ -63,6 +63,7 @@ Notes and environment
 ---------------------
 - Tested with Python 3.11+. The project may work on other Python 3.10+ runtimes but 3.11 is recommended.
 - Some model artifacts are stored via Git LFS. After cloning, run `git lfs pull` if model files are missing.
+- **Gemini chatbot** (Streamlit sidebar): set `GEMINI_API_KEY` in a `.env` file or Streamlit secrets. Optionally, set `GEMINI_MODEL` (default `gemini-1.5-flash`) or a fully-qualified `GEMINI_REST_URL` if you need a different Google Generative Language endpoint.
 
 Project structure (high level)
 
