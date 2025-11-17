@@ -441,8 +441,10 @@ def call_gemini_chat(prompt, context=None, system_instruction=None):
                 fallback_chain.append((trimmed, "'-latest' alias unavailable"))
 
         preferred_order = [
+            "gemini-2.5-flash",
             "gemini-1.5-flash",
-            "gemini-1.5-flash-8b"
+            "gemini-1.5-flash-8b",
+            "gemini-2.5-flash-lite-preview-06-17"
         ]
         for candidate in preferred_order:
             if candidate and candidate != model_name:
