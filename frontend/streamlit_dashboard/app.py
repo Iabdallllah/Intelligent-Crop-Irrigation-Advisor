@@ -8,6 +8,9 @@ import requests
 from dotenv import load_dotenv
 from supabase import create_client
 import plotly.express as px
+from google.oauth2 import service_account
+from google.auth.transport.requests import Request
+import json
 
 
 # Set page configuration
@@ -295,9 +298,32 @@ def recommend_from_dataset(N, P, K, temperature, humidity, ph, rainfall, k=5):
 
 def call_gemini_chat(prompt, context=None, system_instruction=None):
     """Call the Gemini REST API and return a dict with text + metadata."""
-    api_key = os.getenv("GEMINI_API_KEY") or (st.secrets.get("GEMINI_API_KEY") if hasattr(st, "secrets") else None)
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY not found. Please set it in .env or Streamlit secrets.")
+    
+    # Check for Service Account authentication first
+    service_account_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS") or os.path.join(
+        os.path.dirname(__file__), "service-account.json"
+    )
+    
+    access_token = None
+    api_key = None
+    
+    # Try Service Account authentication first
+    if os.path.exists(service_account_path):
+        try:
+            credentials = service_account.Credentials.from_service_account_file(
+                service_account_path,
+                scopes=['https://www.googleapis.com/auth/generative-language.retriever']
+            )
+            credentials.refresh(Request())
+            access_token = credentials.token
+        except Exception as e:
+            st.warning(f"Service Account auth failed, trying API key: {e}")
+    
+    # Fall back to API key if Service Account not available
+    if not access_token:
+        api_key = os.getenv("GEMINI_API_KEY") or (st.secrets.get("GEMINI_API_KEY") if hasattr(st, "secrets") else None)
+        if not api_key:
+            raise ValueError("Neither GOOGLE_APPLICATION_CREDENTIALS nor GEMINI_API_KEY found. Please set one in .env or Streamlit secrets.")
 
     model_name = (os.getenv("GEMINI_MODEL", "gemini-1.5-flash") or "").strip() or "gemini-1.5-flash"
     endpoint_override = os.getenv("GEMINI_REST_URL")
@@ -306,6 +332,8 @@ def call_gemini_chat(prompt, context=None, system_instruction=None):
         return f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
     headers = {"Content-Type": "application/json"}
+    if access_token:
+        headers["Authorization"] = f"Bearer {access_token}"
 
     user_parts = [
         {"text": prompt}
@@ -332,13 +360,22 @@ def call_gemini_chat(prompt, context=None, system_instruction=None):
 
     def _make_request(url):
         try:
-            return requests.post(
-                url,
-                params={"key": api_key},
-                headers=headers,
-                json=payload,
-                timeout=30
-            )
+            # Use Bearer token if available, otherwise use API key
+            if access_token:
+                return requests.post(
+                    url,
+                    headers=headers,
+                    json=payload,
+                    timeout=30
+                )
+            else:
+                return requests.post(
+                    url,
+                    params={"key": api_key},
+                    headers=headers,
+                    json=payload,
+                    timeout=30
+                )
         except requests.RequestException as req_err:
             raise RuntimeError(f"Gemini request failed: {req_err}") from req_err
 
@@ -357,11 +394,19 @@ def call_gemini_chat(prompt, context=None, system_instruction=None):
         if available_model_cache["names"] is not None or available_model_cache["error"] is not None:
             return available_model_cache["names"]
         try:
-            resp = requests.get(
-                "https://generativelanguage.googleapis.com/v1beta/models",
-                params={"key": api_key},
-                timeout=15
-            )
+            # Use Bearer token if available, otherwise use API key
+            if access_token:
+                resp = requests.get(
+                    "https://generativelanguage.googleapis.com/v1beta/models",
+                    headers={"Authorization": f"Bearer {access_token}"},
+                    timeout=15
+                )
+            else:
+                resp = requests.get(
+                    "https://generativelanguage.googleapis.com/v1beta/models",
+                    params={"key": api_key},
+                    timeout=15
+                )
             if resp.ok:
                 data = resp.json()
                 names = set()
