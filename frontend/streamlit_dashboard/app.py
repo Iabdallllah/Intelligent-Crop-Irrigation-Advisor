@@ -328,6 +328,7 @@ def call_gemini_chat(prompt, context=None, system_instruction=None):
         }
 
     attempt_log = []
+    available_model_cache = {"names": None, "error": None}
 
     def _make_request(url):
         try:
@@ -352,6 +353,34 @@ def call_gemini_chat(prompt, context=None, system_instruction=None):
         })
         return response
 
+    def _fetch_available_models():
+        if available_model_cache["names"] is not None or available_model_cache["error"] is not None:
+            return available_model_cache["names"]
+        try:
+            resp = requests.get(
+                "https://generativelanguage.googleapis.com/v1beta/models",
+                params={"key": api_key},
+                timeout=15
+            )
+            if resp.ok:
+                data = resp.json()
+                names = set()
+                for model in data.get("models", []):
+                    name = model.get("name")
+                    if not name:
+                        continue
+                    short_name = name.split("/")[-1]
+                    methods = model.get("supportedGenerationMethods", []) or []
+                    if "generateContent" in methods:
+                        names.add(short_name)
+                available_model_cache["names"] = names
+                return names
+            else:
+                available_model_cache["error"] = resp.text
+        except requests.RequestException as fetch_err:
+            available_model_cache["error"] = str(fetch_err)
+        return None
+
     response = _call_model(model_name)
     used_model = model_name
     fallback_notice = None
@@ -366,11 +395,31 @@ def call_gemini_chat(prompt, context=None, system_instruction=None):
             if trimmed and trimmed != model_name:
                 fallback_chain.append((trimmed, "'-latest' alias unavailable"))
 
-        for candidate in ["gemini-1.5-flash", "gemini-1.5-pro"]:
-            if candidate and candidate not in {model_name} and all(candidate != existing[0] for existing in fallback_chain):
+        preferred_order = [
+            "gemini-1.5-flash",
+            "gemini-1.5-flash-8b"
+        ]
+        for candidate in preferred_order:
+            if candidate and candidate != model_name:
                 fallback_chain.append((candidate, "Primary model unavailable"))
 
-        for fallback_model, reason in fallback_chain:
+        available_names = _fetch_available_models()
+
+        def _allowed(candidate):
+            if not available_names:
+                return True
+            return candidate in available_names
+
+        filtered_chain = [(model, reason) for model, reason in fallback_chain if _allowed(model)]
+
+        if available_names:
+            missing_models = [model for model, _ in fallback_chain if model not in available_names]
+            if missing_models:
+                fallback_notice_parts.append(
+                    "Models not in your account were skipped: " + ", ".join(missing_models)
+                )
+
+        for fallback_model, reason in filtered_chain:
             fallback_notice_parts.append(
                 f"{reason}. Retrying with '{fallback_model}'. Update GEMINI_MODEL to pin a working model."
             )
@@ -394,6 +443,12 @@ def call_gemini_chat(prompt, context=None, system_instruction=None):
         )
         if attempt_summary:
             err_detail = f"{err_detail} (attempts: {attempt_summary})"
+
+        if available_model_cache["names"]:
+            sorted_names = ", ".join(sorted(available_model_cache["names"]))
+            err_detail = f"{err_detail} | Available models for key: {sorted_names}"
+        elif available_model_cache["error"]:
+            err_detail = f"{err_detail} | Unable to list models: {available_model_cache['error']}"
 
         extra_hint = ""
         if response.status_code == 404 and not endpoint_override:
