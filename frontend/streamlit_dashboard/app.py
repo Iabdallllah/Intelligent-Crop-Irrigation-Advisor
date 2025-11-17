@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import os
 import sys
+import requests
 from dotenv import load_dotenv
 from supabase import create_client
 import plotly.express as px
@@ -291,6 +292,58 @@ def recommend_from_dataset(N, P, K, temperature, humidity, ph, rainfall, k=5):
     conf = float(counts.max()) / float(k)
     return str(mode), conf
 
+
+def call_gemini_chat(prompt, context=None, system_instruction=None):
+    """Call the Gemini REST API and return the generated text."""
+    api_key = os.getenv("GEMINI_API_KEY") or (st.secrets.get("GEMINI_API_KEY") if hasattr(st, "secrets") else None)
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY not found. Please set it in .env or Streamlit secrets.")
+
+    endpoint = os.getenv("GEMINI_REST_URL", "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent")
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    user_parts = [
+        {"text": prompt}
+    ]
+    if context:
+        user_parts.append({"text": f"\nContext:\n{context}"})
+
+    payload = {
+        "contents": [
+            {
+                "role": "user",
+                "parts": user_parts
+            }
+        ]
+    }
+
+    if system_instruction:
+        payload["system_instruction"] = {
+            "parts": [{"text": system_instruction}]
+        }
+
+    response = requests.post(
+        endpoint,
+        params={"key": api_key},
+        headers=headers,
+        json=payload,
+        timeout=30
+    )
+    response.raise_for_status()
+    data = response.json()
+
+    try:
+        text = data["candidates"][0]["content"]["parts"][0]["text"]
+    except (KeyError, IndexError, TypeError):
+        text = ""
+
+    if not text:
+        text = "No response returned from Gemini."
+
+    return text
+
 # Check overall system status
 def check_system_status():
     """Returns True only if ALL required models are loaded successfully"""
@@ -545,6 +598,58 @@ with col2:
             except Exception as e:
                 st.error(f"❌ **OPTIMIZATION FAILED**: {str(e)}")
                 st.info("🔄 **Returned Value**: 0 (Exception fail-safe)")
+
+    st.divider()
+    st.subheader("🤖 Gemini Chatbot")
+    st.markdown("استفسر عن نصائح زراعية سريعة مدعومة بذكاء Gemini.")
+
+    gemini_prompt = st.text_area(
+        "💬 اكتب سؤالك أو استفسارك",
+        placeholder="مثال: ما أفضل طريقة لري محصول الأرز في طقس حار؟",
+        key="gemini_prompt",
+        height=120
+    )
+
+    context_snippet = (
+        f"Current soil inputs -> N:{N}, P:{P}, K:{K}, Temp:{temp}°C, Humidity:{hum}%, pH:{ph}, Rainfall:{rain}mm, "
+        f"Soil moisture:{soil_moisture}, Wind:{wind_speed}km/h, Pressure:{pressure}kPa"
+    )
+
+    if st.button("✨ Ask Gemini", type="primary", key="gemini_button"):
+        clean_prompt = gemini_prompt.strip()
+        if not clean_prompt:
+            st.warning("⚠️ رجاءً اكتب سؤالاً أولاً.")
+        else:
+            with st.spinner("جارٍ التواصل مع Gemini..."):
+                try:
+                    try:
+                        with open(os.path.join(repo_root, 'streamlit_debug_predictions.log'), 'a') as _dbg:
+                            _dbg.write(f"GEMINI_PROMPT: {clean_prompt}\n")
+                    except Exception:
+                        pass
+
+                    system_instruction = (
+                        "You are AgriTech Assistant (Gemini) that explains crop and irrigation guidance in concise Arabic + English hints. "
+                        "Use the provided soil context when relevant and keep responses under 200 words."
+                    )
+                    gemini_response = call_gemini_chat(
+                        clean_prompt,
+                        context=context_snippet,
+                        system_instruction=system_instruction
+                    )
+
+                    st.success("✅ Response from Gemini")
+                    st.markdown(gemini_response)
+
+                    try:
+                        with open(os.path.join(repo_root, 'streamlit_debug_predictions.log'), 'a') as _dbg:
+                            _dbg.write(f"GEMINI_RESPONSE: {gemini_response}\n")
+                    except Exception:
+                        pass
+
+                except Exception as e:
+                    st.error(f"❌ Gemini API error: {str(e)}")
+                    st.info("تأكد من ضبط المفتاح والإنترنت ثم أعد المحاولة.")
 
 # Display input summary at the bottom
 st.subheader("📋 Input Summary")
