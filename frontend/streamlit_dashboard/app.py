@@ -601,11 +601,11 @@ with col2:
 
     st.divider()
     st.subheader("🤖 Gemini Chatbot")
-    st.markdown("استفسر عن نصائح زراعية سريعة مدعومة بذكاء Gemini.")
+    st.markdown("Get quick crop & irrigation tips powered by Gemini.")
 
     gemini_prompt = st.text_area(
-        "💬 اكتب سؤالك أو استفسارك",
-        placeholder="مثال: ما أفضل طريقة لري محصول الأرز في طقس حار؟",
+        "💬 Enter your question or request",
+        placeholder="Example: What's the best way to irrigate rice during a heat wave?",
         key="gemini_prompt",
         height=120
     )
@@ -618,9 +618,9 @@ with col2:
     if st.button("✨ Ask Gemini", type="primary", key="gemini_button"):
         clean_prompt = gemini_prompt.strip()
         if not clean_prompt:
-            st.warning("⚠️ رجاءً اكتب سؤالاً أولاً.")
+            st.warning("⚠️ Please type a question first.")
         else:
-            with st.spinner("جارٍ التواصل مع Gemini..."):
+            with st.spinner("Contacting Gemini..."):
                 try:
                     try:
                         with open(os.path.join(repo_root, 'streamlit_debug_predictions.log'), 'a') as _dbg:
@@ -629,7 +629,7 @@ with col2:
                         pass
 
                     system_instruction = (
-                        "You are AgriTech Assistant (Gemini) that explains crop and irrigation guidance in concise Arabic + English hints. "
+                        "You are AgriTech Assistant (Gemini) that explains crop and irrigation guidance in concise, practical English. "
                         "Use the provided soil context when relevant and keep responses under 200 words."
                     )
                     gemini_response = call_gemini_chat(
@@ -649,7 +649,7 @@ with col2:
 
                 except Exception as e:
                     st.error(f"❌ Gemini API error: {str(e)}")
-                    st.info("تأكد من ضبط المفتاح والإنترنت ثم أعد المحاولة.")
+                    st.info("Please verify your API key and internet connection, then try again.")
 
 # Display input summary at the bottom
 st.subheader("📋 Input Summary")
