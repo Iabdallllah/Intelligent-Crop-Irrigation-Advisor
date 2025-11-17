@@ -7,17 +7,14 @@ import sys
 from dotenv import load_dotenv
 from supabase import create_client
 import plotly.express as px
-import google.generativeai as genai
-
-# Configure Gemini
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-1.5-flash")
-
-# Initialize chat history
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
 
 
+# Set page configuration
+st.set_page_config(
+    page_title="AgriTech",
+    page_icon="🌱",
+    layout="wide"
+)
 
 
 # Load environment variables from .env (local) and support Streamlit Cloud secrets
@@ -564,52 +561,3 @@ st.dataframe(summary_df, hide_index=True, width="stretch")
 st.markdown("---")
 st.markdown("**AgriTech - Smart Agriculture Advisor** - Empowering farmers with AI-driven crop and irrigation insights")
 st.markdown("💡 *Tip: Adjust the input parameters to see how they affect the recommendations*")
-
-# --- Chatbot Section ---
-st.markdown("---")
-st.header("🤖 Agriculture Chatbot (Gemini AI)")
-st.markdown("Ask anything related to **agriculture, soil, irrigation, crops, fertilizers, or farming.**")
-
-user_input = st.text_input("Ask a question:", placeholder="e.g., What is the best fertilizer for sandy soil?")
-
-if st.button("Ask Question", key="chatbot_ask"):  # 🔹 Added a unique key
-    if user_input.strip() == "":
-        st.warning("Please enter a question.")
-    else:
-        # Append user question to chat history
-        if "chat_history" not in st.session_state:
-            st.session_state.chat_history = []
-        st.session_state.chat_history.append({"role": "user", "content": user_input})
-
-        system_prompt = """
-        You are an agriculture expert AI assistant.
-        You only answer questions related to:
-        - farming
-        - soil
-        - crop science
-        - irrigation
-        - fertilizers
-        - pest management
-        - agri-technology
-        - weather impact on crops
-
-        If the user asks about something not related to agriculture, respond with:
-        "I can only answer agriculture-related questions."
-        """
-        try:
-            response = model.generate_content(system_prompt + "\nUser: " + user_input)
-            answer = response.text
-            st.session_state.chat_history.append({"role": "assistant", "content": answer})
-        except Exception as e:
-            answer = f"Error: {e}"
-            st.session_state.chat_history.append({"role": "assistant", "content": answer})
-
-# Display chat history
-if "chat_history" in st.session_state:
-    for msg in st.session_state.chat_history:
-        if msg["role"] == "user":
-            st.markdown(f"**👤 You:** {msg['content']}")
-        else:
-            st.markdown(f"**🤖 Bot:** {msg['content']}")
-
-
