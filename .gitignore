@@ -64,3 +64,20 @@ Thumbs.db
 
 # CatBoost
 catboost_info/
+
+# MLflow - keep experiment metadata but ignore large artifacts
+mlruns/*/artifacts/
+mlflow_exports/
+*.png
+*.txt
+*.csv
+!requirements.txt
+!data/*.csv
+!*.md
+!mlruns/**/*.yaml
+!mlruns/**/*.json
+!mlruns/**/*.txt
+
+# MLflow - exclude all except README
+mlruns/*
+!mlruns/README.md
