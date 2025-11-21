@@ -173,6 +173,49 @@ crop_model = load_crop_model()
 irrigation_model = load_irrigation_model()
 optimization_model = load_optimization_model()
 
+
+def fetch_latest_iot_reading():
+    """Fetch the latest sensor reading from Supabase (table: 'Sensor readings').
+    Returns a dict with float values or None on failure.
+    Converts soil_moisture from 0-1 to 0-100 automatically if needed.
+    """
+    SUPABASE_URL = os.getenv("SUPABASE_URL") or (st.secrets.get("SUPABASE_URL") if hasattr(st, "secrets") else None)
+    SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY") or (st.secrets.get("SUPABASE_SERVICE_KEY") if hasattr(st, "secrets") else None)
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return None
+    try:
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        response = supabase.table("Sensor readings").select("*").order("created_at", desc=True).limit(1).execute()
+        data = response.data
+        if not data:
+            return None
+        rec = data[0]
+
+        def _f(key, default=None):
+            v = rec.get(key)
+            try:
+                return float(v) if v is not None else default
+            except Exception:
+                return default
+
+        result = {
+            'temperature': _f('temperature', None),
+            'humidity': _f('humidity', None),
+            'soil_moisture': _f('soil_moisture', None),
+            'wind_speed': _f('wind_speed', None),
+            'pressure': _f('pressure', None),
+            'rainfall': _f('rainfall', None),
+        }
+
+        # If soil_moisture looks normalized (0-1) convert to percent
+        sm = result.get('soil_moisture')
+        if sm is not None and sm <= 1.0:
+            result['soil_moisture'] = sm * 100.0
+
+        return result
+    except Exception:
+        return None
+
 # Feature engineering functions
 def create_irrigation_features(soil_moisture, temperature, humidity, ph, n, p, k, rainfall=0):
     """Create all required features for irrigation model"""
@@ -541,11 +584,52 @@ def check_system_status():
 # Check system status
 system_operational = check_system_status()
 
+# Try to auto-fill inputs from the latest IoT reading (if available)
+sensor_defaults = fetch_latest_iot_reading() or {}
+
+# Helper that treats explicit None as missing and falls back to default
+def _safe_default(key, default):
+    v = sensor_defaults.get(key, None)
+    return default if v is None else v
+
+# prepare defaults (fall back to previous hard-coded defaults)
+temp_default = _safe_default('temperature', 23.0)
+hum_default = _safe_default('humidity', 82.0)
+soil_moisture_default = _safe_default('soil_moisture', 35.0)
+wind_speed_default = _safe_default('wind_speed', 8.0)
+pressure_default = _safe_default('pressure', 101.3)
+rain_default = _safe_default('rainfall', 240.0)
+
 # Create two columns layout
 col1, col2 = st.columns([1, 1])
 
 with col1:
     st.header("📊 Soil & Environment Data")
+    # Option to auto-fill selected inputs from IoT and lock those widgets
+    auto_fill = st.checkbox("🔁 Auto-fill Temperature / Humidity / Soil Moisture from IoT", value=True, help="When enabled, temperature, humidity and soil moisture are populated from IoT and locked for editing")
+
+    # Manual refresh button to fetch latest IoT values into session state
+    if st.button("🔄 Fetch IoT Now"):
+        new = fetch_latest_iot_reading()
+        if new:
+            st.session_state['sensor_defaults'] = new
+        else:
+            st.warning("No IoT data available or failed to fetch.")
+        # `st.experimental_rerun()` is not present in all Streamlit builds/environments.
+        # Try to call it if available; otherwise inform the user to refresh.
+        try:
+            if hasattr(st, 'experimental_rerun'):
+                st.experimental_rerun()
+            elif hasattr(st, 'rerun'):
+                # some versions expose a different API
+                st.rerun()
+            else:
+                st.success("IoT values fetched — please refresh the page to apply the new defaults.")
+        except Exception:
+            st.success("IoT values fetched — please refresh the page to apply the new defaults.")
+
+    # Prefer session-cached sensor values if present (after manual refresh)
+    current_sensor = st.session_state.get('sensor_defaults', sensor_defaults)
     
     # Input fields for crop recommendation
     N = st.number_input("🟤 Nitrogen (N)", min_value=0, max_value=200, value=80, help="Nitrogen content in soil")
@@ -554,17 +638,31 @@ with col1:
     
     st.divider()
     
-    temp = st.number_input("🌡️ Temperature (°C)", min_value=0.0, max_value=50.0, value=23.0, help="Average temperature")
-    hum = st.number_input("💧 Humidity (%)", min_value=0.0, max_value=100.0, value=82.0, help="Relative humidity")
+    temp_val = current_sensor.get('temperature', temp_default)
+    hum_val = current_sensor.get('humidity', hum_default)
+    temp = st.number_input("🌡️ Temperature (°C)", min_value=0.0, max_value=50.0, value=float(temp_val), help="Average temperature", disabled=auto_fill)
+    hum = st.number_input("💧 Humidity (%)", min_value=0.0, max_value=100.0, value=float(hum_val), help="Relative humidity", disabled=auto_fill)
     ph = st.number_input("⚗️ Soil pH", min_value=0.0, max_value=14.0, value=6.7, help="Soil pH level")
     rain = st.number_input("🌧️ Rainfall (mm)", min_value=0.0, max_value=300.0, value=240.0, help="Annual rainfall")
     
     st.divider()
     
     # Additional inputs for irrigation models
-    soil_moisture = st.number_input("💧 Soil Moisture", min_value=0.0, max_value=1.0, value=0.35, step=0.01, help="Volumetric soil moisture content")
-    wind_speed = st.number_input("🌬️ Wind Speed (km/h)", min_value=0.0, max_value=50.0, value=8.0, help="Wind speed")
-    pressure = st.number_input("🌡️ Pressure (kPa)", min_value=80.0, max_value=110.0, value=101.3, help="Atmospheric pressure")
+    # Use percentage (0-100) for soil moisture so downstream feature calculations
+    # that divide by 100 (to compute relative saturation) work as intended.
+    soil_val = current_sensor.get('soil_moisture', soil_moisture_default)
+    soil_moisture = st.number_input(
+        "💧 Soil Moisture (%)",
+        min_value=0.0,
+        max_value=100.0,
+        value=float(soil_val),
+        step=0.1,
+        help="Soil moisture as percentage (0-100). Example: 35 means 35% volumetric water content",
+        disabled=auto_fill,
+    )
+    # wind_speed and pressure remain manual inputs (always editable)
+    wind_speed = st.number_input("🌬️ Wind Speed (km/h)", min_value=0.0, max_value=50.0, value=float(wind_speed_default), help="Wind speed")
+    pressure = st.number_input("🌡️ Pressure (kPa)", min_value=80.0, max_value=110.0, value=float(pressure_default), help="Atmospheric pressure")
 
 with col2:
     st.header("🎯 Recommendations & Decisions")
@@ -863,7 +961,7 @@ with col2:
 st.subheader("📋 Input Summary")
 summary_data = {
     'Parameter': ['Nitrogen', 'Phosphorus', 'Potassium', 'Temperature', 'Humidity', 'pH', 'Rainfall', 'Soil Moisture', 'Wind Speed', 'Pressure'],
-    'Value': [f"{N}", f"{P}", f"{K}", f"{temp}°C", f"{hum}%", f"{ph}", f"{rain}mm", f"{soil_moisture}", f"{wind_speed}km/h", f"{pressure}kPa"],
+    'Value': [f"{N}", f"{P}", f"{K}", f"{temp}°C", f"{hum}%", f"{ph}", f"{rain}mm", f"{soil_moisture}%", f"{wind_speed}km/h", f"{pressure}kPa"],
     'Status': ['✅' if val > 0 else '⚠️' for val in [N, P, K, temp, hum, ph, rain, soil_moisture, wind_speed, pressure]]
 }
 
