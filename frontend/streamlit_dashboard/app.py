@@ -973,15 +973,18 @@ with col2:
     
     # === IRRIGATION DECISIONS SECTION ===
     st.divider()
-    st.subheader("💧 Irrigation Decisions")
+    st.subheader("💧 Smart Irrigation Analysis")
     
-    # Smart Irrigation Classifier
-    if st.button("🔍 Smart Irrigation Check", width="stretch", key="irrigation_check"):
+    # Unified Irrigation Check & Optimization
+    if st.button("🔍 Analyze Irrigation Needs", type="primary", width="stretch", key="irrigation_analysis"):
         if not system_operational or not MODEL_STATUS['irrigation_model']:
             st.error("❌ **FAIL-SAFE ACTIVATED**: Irrigation model unavailable")
             st.info("🔄 **Returned Value**: 0 (Safe failure mode)")
         else:
             try:
+                # STEP 1: Smart Irrigation Check
+                st.markdown("### 📊 Step 1: Irrigation Decision")
+                
                 # Create features for irrigation model
                 irrigation_features = create_irrigation_features(
                     soil_moisture, temp, hum, ph, N, P, K, rain
@@ -1007,55 +1010,88 @@ with col2:
 
                 if show_debug:
                     st.markdown("**Debug — irrigation model inputs**")
-                    # show the vector we passed to the model
                     st.write(irrigation_features.tolist())
                     st.markdown("**Debug — irrigation model outputs**")
                     st.write({"prediction": str(pred), "confidence": float(prob) if prob is not None else None})
 
-                # Display irrigation decision (no hard confidence threshold)
-                if pred == 1 or pred == 'irrigate':
-                    st.success(f"💧 **Irrigation Needed**")
+                # Display irrigation decision
+                irrigation_needed = (pred == 1 or pred == 'irrigate')
+                
+                if irrigation_needed:
+                    st.success(f"✅ **Irrigation Needed**")
+                    if prob is not None:
+                        st.info(f"🎯 **Confidence: {prob:.2%}**")
+                    
+                    # STEP 2: Calculate Optimal Irrigation Amount (only if irrigation is needed)
+                    st.markdown("### ⚡ Step 2: Optimal Irrigation Amount")
+                    
+                    if not MODEL_STATUS['optimization_model']:
+                        st.warning("⚠️ **Optimization model unavailable** - Cannot calculate optimal amount")
+                    else:
+                        try:
+                            # Create features for optimization model
+                            optimization_features = create_optimization_features(
+                                soil_moisture, temp, hum, ph, N, P, K, rain
+                            )
+                            
+                            try:
+                                with open(os.path.join(repo_root, 'streamlit_debug_predictions.log'), 'a') as _dbg:
+                                    _dbg.write(f"OPT_INPUTS: soil_moisture={soil_moisture}, temp={temp}, hum={hum}, ph={ph}, N={N}, P={P}, K={K}, rain={rain}\n")
+                            except Exception:
+                                pass
+                            
+                            optimization_pred = optimization_model.predict(optimization_features)[0]
+                            
+                            try:
+                                with open(os.path.join(repo_root, 'streamlit_debug_predictions.log'), 'a') as _dbg:
+                                    _dbg.write(f"OPT_OUTPUT: pred={optimization_pred}\n")
+                            except Exception:
+                                pass
+
+                            if show_debug:
+                                st.markdown("**Debug — optimization model inputs**")
+                                st.write(optimization_features.tolist())
+                                st.markdown("**Debug — optimization model outputs**")
+                                st.write({"prediction": float(optimization_pred)})
+                            
+                            # Validation check
+                            if optimization_pred < 0 or optimization_pred > 100:
+                                st.error("❌ **INVALID OPTIMIZATION RESULT**")
+                                st.info("🔄 **Returned Value**: 0 (Validation fail-safe)")
+                            else:
+                                st.success(f"💧 **Recommended Irrigation: {optimization_pred:.2f} units**")
+                                
+                                # Summary box
+                                st.success(f"""
+                                ### 🎯 Irrigation Summary
+                                - **Decision**: Irrigation Required ✅
+                                - **Optimal Amount**: {optimization_pred:.2f} units
+                                - **Confidence**: {prob:.2%} (Classification)
+                                """)
+                                
+                        except Exception as e:
+                            st.error(f"❌ **OPTIMIZATION FAILED**: {str(e)}")
+                            st.info("🔄 **Returned Value**: 0 (Exception fail-safe)")
                 else:
                     st.info(f"🚫 **No Irrigation Needed**")
-
-                if prob is not None:
-                    st.info(f"🎯 **Confidence: {prob:.2%}**")
+                    if prob is not None:
+                        st.info(f"🎯 **Confidence: {prob:.2%}**")
+                    
+                    # Display recommended units as 0
+                    st.success("💧 **Recommended Irrigation: 0.00 units**")
+                    st.info("✅ Soil conditions are adequate - no irrigation required at this time")
+                    
+                    # Summary box
+                    st.success(f"""
+                    ### 🎯 Irrigation Summary
+                    - **Decision**: No Irrigation Required ✅
+                    - **Recommended Amount**: 0.00 units
+                    - **Confidence**: {prob:.2%} (Classification)
+                    - **Reason**: Soil moisture and environmental conditions are adequate
+                    """)
                         
             except Exception as e:
-                st.error(f"❌ **IRRIGATION PREDICTION FAILED**: {str(e)}")
-                st.info("🔄 **Returned Value**: 0 (Exception fail-safe)")
-    
-    # Irrigation Optimization
-    if st.button("⚡ Irrigation Optimization", width="stretch", key="irrigation_optimization"):
-        if not system_operational or not MODEL_STATUS['optimization_model']:
-            st.error("❌ **FAIL-SAFE ACTIVATED**: Optimization model unavailable") 
-            st.info("🔄 **Returned Value**: 0 (Safe failure mode)")
-        else:
-            try:
-                # Create features for optimization model
-                optimization_features = create_optimization_features(
-                    soil_moisture, temp, hum, ph, N, P, K, rain
-                )
-                
-                optimization_pred = optimization_model.predict(optimization_features)[0]
-                
-                # Validation check
-                if optimization_pred < 0 or optimization_pred > 100:  # Unrealistic values
-                    st.error("❌ **INVALID OPTIMIZATION RESULT**")
-                    st.info("🔄 **Returned Value**: 0 (Validation fail-safe)")
-                else:
-                    st.success(f"⚡ **Optimal Irrigation: {optimization_pred:.2f} units**")
-                    
-                    # Add interpretation
-                    if optimization_pred < 8:
-                        st.info("💧 Low irrigation requirement")
-                    elif optimization_pred < 18:
-                        st.info("💧💧 Moderate irrigation requirement") 
-                    else:
-                        st.info("💧💧💧 High irrigation requirement")
-                    
-            except Exception as e:
-                st.error(f"❌ **OPTIMIZATION FAILED**: {str(e)}")
+                st.error(f"❌ **IRRIGATION ANALYSIS FAILED**: {str(e)}")
                 st.info("🔄 **Returned Value**: 0 (Exception fail-safe)")
 
     st.divider()
