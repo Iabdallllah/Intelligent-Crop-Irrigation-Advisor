@@ -1047,9 +1047,9 @@ with col2:
                     st.success(f"⚡ **Optimal Irrigation: {optimization_pred:.2f} units**")
                     
                     # Add interpretation
-                    if optimization_pred < 10:
+                    if optimization_pred < 8:
                         st.info("💧 Low irrigation requirement")
-                    elif optimization_pred < 30:
+                    elif optimization_pred < 18:
                         st.info("💧💧 Moderate irrigation requirement") 
                     else:
                         st.info("💧💧💧 High irrigation requirement")
