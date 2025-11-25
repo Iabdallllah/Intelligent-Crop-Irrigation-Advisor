@@ -26,9 +26,9 @@ EPOCHS = 20  # Reduced for faster training
 LEARNING_RATE = 0.0001
 
 # Paths
-PROJECT_ROOT = Path(__file__).parent
-TRAIN_DATA_DIR = PROJECT_ROOT / "soil-type-classification/static/uploads/train"
-MODEL_SAVE_DIR = PROJECT_ROOT / "soil_model_savedmodel"
+PROJECT_ROOT = Path(__file__).parent.parent  # Go up to project root
+TRAIN_DATA_DIR = PROJECT_ROOT / "models/soil-type-classification/static/uploads/train"
+MODEL_SAVE_DIR = PROJECT_ROOT / "models/soil_model_savedmodel"
 MODEL_SAVE_PATH = MODEL_SAVE_DIR / "my_soil_model.h5"
 
 print("="*60)

@@ -398,8 +398,8 @@ def load_soil_model():
     repo_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file)))
     
     # Try loading .h5 file first (your model)
-    h5_path = os.path.join(repo_root, "soil_model_savedmodel", "my_soil_model.h5")
-    savedmodel_path = os.path.join(repo_root, "soil_model_savedmodel")
+    h5_path = os.path.join(repo_root, "models", "soil_model_savedmodel", "my_soil_model.h5")
+    savedmodel_path = os.path.join(repo_root, "models", "soil_model_savedmodel")
     
     # قائمة التسميات الصحيحة التي تدرب عليها النموذج (مستخلصة من إخراجك السابق)
     # هذا الترتيب يجب أن يطابق ترتيب الفئات في مجلدات التدريب: (0: Peat, 1: Sandy, 2: Silt)
@@ -1016,7 +1016,7 @@ with col1:
         if st.button("🔍 Classify Soil Type", type="primary", use_container_width=True, key="classify_soil"):
             if not MODEL_STATUS.get('soil_model') or soil_model is None:
                 st.error("❌ **SOIL CLASSIFIER NOT LOADED**: Cannot classify soil type")
-                st.info("🔄 Please ensure soil_model_savedmodel is available in the project root")
+                st.info("🔄 Please ensure soil_model_savedmodel is available in models/ directory")
             else:
                 with st.spinner("🔄 Analyzing soil image..."):
                     # Get prediction with all probabilities
