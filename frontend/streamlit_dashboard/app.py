@@ -50,14 +50,44 @@ st.markdown("### Get intelligent crop recommendations and irrigation decisions b
 
 # --- IoT Live Data Section ---
 with st.expander("Live Sensor Data (IoT)", expanded=False):
-    st.markdown("Click 'Refresh Data' to fetch latest readings from Supabase")
+    st.markdown("Click 'Refresh Data' to fetch latest readings from Supabase or use demo data")
     
     # Supabase credentials (from .env or Streamlit secrets)
     SUPABASE_URL = os.getenv("SUPABASE_URL") or (st.secrets.get("SUPABASE_URL") if hasattr(st, "secrets") else None)
     SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY") or (st.secrets.get("SUPABASE_SERVICE_KEY") if hasattr(st, "secrets") else None)
     
+    # Button row
+    btn_col1, btn_col2 = st.columns(2)
+    with btn_col1:
+        refresh_btn = st.button("🔄 Refresh Data", disabled=(not SUPABASE_URL or not SUPABASE_KEY))
+    with btn_col2:
+        demo_btn = st.button("🎲 Load Demo Data")
+    
+    # Demo data function
+    def generate_demo_data():
+        """Generate demo sensor data for testing"""
+        import numpy as np
+        from datetime import datetime, timedelta
+        
+        # Generate 50 time points over last 24 hours
+        now = datetime.now()
+        times = [now - timedelta(hours=24-i*0.5) for i in range(50)]
+        
+        # Generate realistic sensor data with some variation
+        np.random.seed(42)
+        data = {
+            'created_at': times,
+            'temperature': 26.97 + np.random.normal(0, 2, 50),
+            'humidity': 62.02 + np.random.normal(0, 5, 50),
+            'soil_moisture': 35 + np.random.normal(0, 8, 50),
+            'water_level': 50 + np.random.normal(0, 10, 50),
+            'wind_speed': 8 + np.random.normal(0, 3, 50),
+            'rainfall': np.random.exponential(2, 50)
+        }
+        return pd.DataFrame(data)
+    
     if SUPABASE_URL and SUPABASE_KEY:
-        if st.button("🔄 Refresh Data"):
+        if refresh_btn:
             with st.spinner("Fetching sensor data..."):
                 try:
                     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -65,26 +95,210 @@ with st.expander("Live Sensor Data (IoT)", expanded=False):
                     data = response.data
                     if data:
                         df = pd.DataFrame(data)
-                        st.subheader("Sensor Data Table")
-                        st.dataframe(df)
-
-                        st.subheader("Sensor Data Visualization")
-                        # Plot temperature and humidity over time
-                        fig = px.line(df.sort_values("created_at"), x="created_at", y=["temperature", "humidity"], markers=True, title="Temperature & Humidity Over Time")
-                        st.plotly_chart(fig, use_container_width=True)
-
-                        # Plot soil moisture and water level over time
-                        if "soil_moisture" in df.columns and "water_level" in df.columns:
-                            fig2 = px.line(df.sort_values("created_at"), x="created_at", y=["soil_moisture", "water_level"], markers=True, title="Soil Moisture & Water Level Over Time")
+                        df_sorted = df.sort_values("created_at")
+                        
+                        # Quick Stats Section
+                        st.subheader("📊 Latest Sensor Readings")
+                        cols = st.columns(4)
+                        
+                        if "temperature" in df.columns:
+                            with cols[0]:
+                                latest_temp = df.iloc[0].get("temperature", "N/A")
+                                avg_temp = df["temperature"].mean()
+                                st.metric("🌡️ Temperature", f"{latest_temp:.1f}°C" if isinstance(latest_temp, (int, float)) else latest_temp, 
+                                         delta=f"Avg: {avg_temp:.1f}°C")
+                        
+                        if "humidity" in df.columns:
+                            with cols[1]:
+                                latest_hum = df.iloc[0].get("humidity", "N/A")
+                                avg_hum = df["humidity"].mean()
+                                st.metric("💧 Humidity", f"{latest_hum:.1f}%" if isinstance(latest_hum, (int, float)) else latest_hum,
+                                         delta=f"Avg: {avg_hum:.1f}%")
+                        
+                        if "soil_moisture" in df.columns:
+                            with cols[2]:
+                                latest_sm = df.iloc[0].get("soil_moisture", "N/A")
+                                avg_sm = df["soil_moisture"].mean()
+                                st.metric("🌱 Soil Moisture", f"{latest_sm:.1f}%" if isinstance(latest_sm, (int, float)) else latest_sm,
+                                         delta=f"Avg: {avg_sm:.1f}%")
+                        
+                        if "water_level" in df.columns:
+                            with cols[3]:
+                                latest_wl = df.iloc[0].get("water_level", "N/A")
+                                avg_wl = df["water_level"].mean()
+                                st.metric("💦 Water Level", f"{latest_wl:.1f}" if isinstance(latest_wl, (int, float)) else latest_wl,
+                                         delta=f"Avg: {avg_wl:.1f}")
+                        
+                        st.divider()
+                        
+                        # Visualizations
+                        st.subheader("📈 Sensor Data Visualization")
+                        
+                        # Temperature and Humidity Chart (2 separate lines with different colors)
+                        if "temperature" in df.columns and "humidity" in df.columns:
+                            fig1 = px.line(df_sorted, x="created_at", y="temperature", 
+                                          title="🌡️ Temperature Over Time",
+                                          labels={"created_at": "Time", "temperature": "Temperature (°C)"},
+                                          markers=True)
+                            fig1.update_traces(line_color='#FF6B6B', marker=dict(size=6))
+                            fig1.update_layout(hovermode='x unified', height=350)
+                            st.plotly_chart(fig1, use_container_width=True)
+                            
+                            fig2 = px.line(df_sorted, x="created_at", y="humidity",
+                                          title="💧 Humidity Over Time",
+                                          labels={"created_at": "Time", "humidity": "Humidity (%)"},
+                                          markers=True)
+                            fig2.update_traces(line_color='#4ECDC4', marker=dict(size=6))
+                            fig2.update_layout(hovermode='x unified', height=350)
                             st.plotly_chart(fig2, use_container_width=True)
+                        
+                        # Soil Moisture and Water Level Chart
+                        if "soil_moisture" in df.columns:
+                            fig3 = px.line(df_sorted, x="created_at", y="soil_moisture",
+                                          title="🌱 Soil Moisture Over Time",
+                                          labels={"created_at": "Time", "soil_moisture": "Soil Moisture (%)"},
+                                          markers=True)
+                            fig3.update_traces(line_color='#95E1D3', marker=dict(size=6))
+                            fig3.update_layout(hovermode='x unified', height=350)
+                            st.plotly_chart(fig3, use_container_width=True)
+                        
+                        if "water_level" in df.columns:
+                            fig4 = px.line(df_sorted, x="created_at", y="water_level",
+                                          title="💦 Water Level Over Time",
+                                          labels={"created_at": "Time", "water_level": "Water Level"},
+                                          markers=True)
+                            fig4.update_traces(line_color='#3742FA', marker=dict(size=6))
+                            fig4.update_layout(hovermode='x unified', height=350)
+                            st.plotly_chart(fig4, use_container_width=True)
+                        
+                        # Additional sensors if available
+                        if "wind_speed" in df.columns:
+                            fig5 = px.line(df_sorted, x="created_at", y="wind_speed",
+                                          title="🌬️ Wind Speed Over Time",
+                                          labels={"created_at": "Time", "wind_speed": "Wind Speed (km/h)"},
+                                          markers=True)
+                            fig5.update_traces(line_color='#FFA502', marker=dict(size=6))
+                            fig5.update_layout(hovermode='x unified', height=350)
+                            st.plotly_chart(fig5, use_container_width=True)
+                        
+                        if "rainfall" in df.columns:
+                            fig6 = px.bar(df_sorted, x="created_at", y="rainfall",
+                                         title="🌧️ Rainfall Over Time",
+                                         labels={"created_at": "Time", "rainfall": "Rainfall (mm)"})
+                            fig6.update_traces(marker_color='#5F27CD')
+                            fig6.update_layout(hovermode='x unified', height=350)
+                            st.plotly_chart(fig6, use_container_width=True)
+                        
+                        # Data Table (collapsible)
+                        with st.expander("📋 View Raw Data Table"):
+                            st.dataframe(df, use_container_width=True)
                     else:
                         st.info("No sensor data found in Supabase.")
                 except Exception as e:
                     st.error(f"Error fetching data from Supabase: {e}")
-        else:
-            st.info("👆 Click 'Refresh Data' to load IoT sensor readings")
+                    st.info("💡 Try using Demo Data instead")
+        elif not refresh_btn and not demo_btn:
+            st.info("👆 Click 'Refresh Data' to load IoT sensor readings from Supabase")
     else:
-        st.warning("Supabase credentials not found. Please set SUPABASE_URL and SUPABASE_SERVICE_KEY in your environment.")
+        st.warning("⚠️ Supabase credentials not found. Use Demo Data button instead.")
+    
+    # Handle demo data button (works regardless of Supabase credentials)
+    if demo_btn:
+        with st.spinner("Generating demo data..."):
+            try:
+                df = generate_demo_data()
+                df_sorted = df.sort_values("created_at")
+                
+                st.success("✅ Demo data loaded successfully!")
+                
+                # Quick Stats Section
+                st.subheader("📊 Latest Sensor Readings (Demo)")
+                cols = st.columns(4)
+                
+                with cols[0]:
+                    latest_temp = df.iloc[-1]["temperature"]
+                    avg_temp = df["temperature"].mean()
+                    st.metric("🌡️ Temperature", f"{latest_temp:.1f}°C", delta=f"Avg: {avg_temp:.1f}°C")
+                
+                with cols[1]:
+                    latest_hum = df.iloc[-1]["humidity"]
+                    avg_hum = df["humidity"].mean()
+                    st.metric("💧 Humidity", f"{latest_hum:.1f}%", delta=f"Avg: {avg_hum:.1f}%")
+                
+                with cols[2]:
+                    latest_sm = df.iloc[-1]["soil_moisture"]
+                    avg_sm = df["soil_moisture"].mean()
+                    st.metric("🌱 Soil Moisture", f"{latest_sm:.1f}%", delta=f"Avg: {avg_sm:.1f}%")
+                
+                with cols[3]:
+                    latest_wl = df.iloc[-1]["water_level"]
+                    avg_wl = df["water_level"].mean()
+                    st.metric("💦 Water Level", f"{latest_wl:.1f}", delta=f"Avg: {avg_wl:.1f}")
+                
+                st.divider()
+                
+                # Visualizations
+                st.subheader("📈 Sensor Data Visualization")
+                
+                # Temperature Chart
+                fig1 = px.line(df_sorted, x="created_at", y="temperature", 
+                              title="🌡️ Temperature Over Time",
+                              labels={"created_at": "Time", "temperature": "Temperature (°C)"},
+                              markers=True)
+                fig1.update_traces(line_color='#FF6B6B', marker=dict(size=6))
+                fig1.update_layout(hovermode='x unified', height=350)
+                st.plotly_chart(fig1, use_container_width=True)
+                
+                # Humidity Chart
+                fig2 = px.line(df_sorted, x="created_at", y="humidity",
+                              title="💧 Humidity Over Time",
+                              labels={"created_at": "Time", "humidity": "Humidity (%)"},
+                              markers=True)
+                fig2.update_traces(line_color='#4ECDC4', marker=dict(size=6))
+                fig2.update_layout(hovermode='x unified', height=350)
+                st.plotly_chart(fig2, use_container_width=True)
+                
+                # Soil Moisture Chart
+                fig3 = px.line(df_sorted, x="created_at", y="soil_moisture",
+                              title="🌱 Soil Moisture Over Time",
+                              labels={"created_at": "Time", "soil_moisture": "Soil Moisture (%)"},
+                              markers=True)
+                fig3.update_traces(line_color='#95E1D3', marker=dict(size=6))
+                fig3.update_layout(hovermode='x unified', height=350)
+                st.plotly_chart(fig3, use_container_width=True)
+                
+                # Water Level Chart
+                fig4 = px.line(df_sorted, x="created_at", y="water_level",
+                              title="💦 Water Level Over Time",
+                              labels={"created_at": "Time", "water_level": "Water Level"},
+                              markers=True)
+                fig4.update_traces(line_color='#3742FA', marker=dict(size=6))
+                fig4.update_layout(hovermode='x unified', height=350)
+                st.plotly_chart(fig4, use_container_width=True)
+                
+                # Wind Speed Chart
+                fig5 = px.line(df_sorted, x="created_at", y="wind_speed",
+                              title="🌬️ Wind Speed Over Time",
+                              labels={"created_at": "Time", "wind_speed": "Wind Speed (km/h)"},
+                              markers=True)
+                fig5.update_traces(line_color='#FFA502', marker=dict(size=6))
+                fig5.update_layout(hovermode='x unified', height=350)
+                st.plotly_chart(fig5, use_container_width=True)
+                
+                # Rainfall Bar Chart
+                fig6 = px.bar(df_sorted, x="created_at", y="rainfall",
+                             title="🌧️ Rainfall Over Time",
+                             labels={"created_at": "Time", "rainfall": "Rainfall (mm)"})
+                fig6.update_traces(marker_color='#5F27CD')
+                fig6.update_layout(hovermode='x unified', height=350)
+                st.plotly_chart(fig6, use_container_width=True)
+                
+                # Data Table (collapsible)
+                with st.expander("📋 View Raw Data Table"):
+                    st.dataframe(df, use_container_width=True)
+                    
+            except Exception as e:
+                st.error(f"❌ Error generating demo data: {e}")
 
 # Global status tracker for all models
 MODEL_STATUS = {
@@ -632,9 +846,9 @@ with col1:
     current_sensor = st.session_state.get('sensor_defaults', sensor_defaults)
     
     # Input fields for crop recommendation
-    N = st.number_input("🟤 Nitrogen (N)", min_value=0, max_value=200, value=80, help="Nitrogen content in soil")
-    P = st.number_input("🟠 Phosphorus (P)", min_value=0, max_value=200, value=48, help="Phosphorus content in soil")
-    K = st.number_input("🟡 Potassium (K)", min_value=0, max_value=200, value=40, help="Potassium content in soil")
+    N = st.number_input("🟤 Nitrogen (N)", min_value=0, max_value=200, value=101, help="Nitrogen content in soil")
+    P = st.number_input("🟠 Phosphorus (P)", min_value=0, max_value=200, value=33, help="Phosphorus content in soil")
+    K = st.number_input("🟡 Potassium (K)", min_value=0, max_value=200, value=33, help="Potassium content in soil")
     
     st.divider()
     
@@ -642,8 +856,8 @@ with col1:
     hum_val = current_sensor.get('humidity', hum_default)
     temp = st.number_input("🌡️ Temperature (°C)", min_value=0.0, max_value=50.0, value=float(temp_val), help="Average temperature", disabled=auto_fill)
     hum = st.number_input("💧 Humidity (%)", min_value=0.0, max_value=100.0, value=float(hum_val), help="Relative humidity", disabled=auto_fill)
-    ph = st.number_input("⚗️ Soil pH", min_value=0.0, max_value=14.0, value=6.7, help="Soil pH level")
-    rain = st.number_input("🌧️ Rainfall (mm)", min_value=0.0, max_value=300.0, value=240.0, help="Annual rainfall")
+    ph = st.number_input("⚗️ Soil pH", min_value=0.0, max_value=14.0, value=6.91, help="Soil pH level")
+    rain = st.number_input("🌧️ Rainfall (mm)", min_value=0.0, max_value=300.0, value=142.86, help="Annual rainfall")
     
     st.divider()
     
@@ -668,22 +882,15 @@ with col2:
     st.header("🎯 Recommendations & Decisions")
     # Developer debug toggle: show raw inputs/outputs on the page
     show_debug = st.checkbox("🔧 Show raw inputs & model outputs", value=False, key="show_debug")
-    # Option to use the dataset-based recommender (falls back to this when dummy model is present)
-    use_data_recommender = st.checkbox("📚 Use dataset-based recommender (from data/crop_data.csv)", value=True, key="use_data_recommender")
-    # Short explanation for users: dataset recommender is a k-NN over `data/crop_data.csv`.
-    # It works even if the pickled/trained crop model is missing, but it only
-    # reflects nearest examples from the CSV and may not generalize beyond them.
-    st.info("📚 Dataset recommender: uses k-NN over `data/crop_data.csv`. Works as a fallback when a trained model is unavailable. It returns recommendations based on similar examples in the dataset and may not generalize.")
     
     # === CROP RECOMMENDATION SECTION ===
     st.subheader("🌱 Crop Recommendation")
     
     if st.button("🚀 Get Crop Recommendation", type="primary", width="stretch", key="crop_recommendation"):
-        # Allow dataset-based recommender to run even if some models failed to load.
-        # Previously the UI blocked all recommendations when any model failed to load.
-        if not system_operational and not use_data_recommender:
-            st.error("❌ **FAIL-SAFE ACTIVATED**: Cannot provide recommendations due to system failure")
-            st.info("🔄 **Returned Value**: 0 (Safe failure mode)")
+        # Check if crop model is loaded
+        if not MODEL_STATUS.get('crop_model') or crop_model is None:
+            st.error("❌ **CROP MODEL NOT LOADED**: Cannot provide recommendations")
+            st.info("🔄 Please ensure crop_model.pkl is available in models/crop recommendation/")
         else:
             try:
                 # Create DataFrame with proper column names to avoid warnings
@@ -697,49 +904,21 @@ with col2:
                 except Exception:
                     pass
 
-                # Make prediction
+                # Make prediction using crop_model
                 prediction = None
                 confidence = None
 
-                # If requested, use dataset-based recommender which uses nearest-neighbors
-                if use_data_recommender:
+                try:
+                    prediction = crop_model.predict(input_data)[0]
                     try:
-                        pred_label, conf_score = recommend_from_dataset(
-                            N, P, K, temp, hum, ph, rain, k=5
-                        )
-                        prediction = pred_label
-                        confidence = conf_score
+                        confidence = crop_model.predict_proba(input_data).max()
                     except Exception:
-                        # If dataset recommender fails, try crop_model if it's loaded
-                        if MODEL_STATUS.get('crop_model') and crop_model is not None:
-                            try:
-                                prediction = crop_model.predict(input_data)[0]
-                                try:
-                                    confidence = crop_model.predict_proba(input_data).max()
-                                except Exception:
-                                    confidence = None
-                            except Exception:
-                                prediction = 'unknown'
-                                confidence = None
-                        else:
-                            prediction = 'unknown'
-                            confidence = None
-                else:
-                    # Use the loaded crop_model if available, otherwise warn and return unknown
-                    if MODEL_STATUS.get('crop_model') and crop_model is not None:
-                        try:
-                            prediction = crop_model.predict(input_data)[0]
-                            try:
-                                confidence = crop_model.predict_proba(input_data).max()
-                            except Exception:
-                                confidence = None
-                        except Exception:
-                            prediction = 'unknown'
-                            confidence = None
-                    else:
-                        st.warning("⚠️ Crop model not loaded. Enable 'Use dataset-based recommender' to get recommendations from dataset.")
-                        prediction = 'unknown'
                         confidence = None
+                except Exception as pred_error:
+                    st.error(f"❌ **PREDICTION FAILED**: {str(pred_error)}")
+                    prediction = 'unknown'
+                    confidence = None
+                
                 # Debug: log model outputs as well and (optionally) print them to the page
                 try:
                     with open(os.path.join(repo_root, 'streamlit_debug_predictions.log'), 'a') as _dbg:
@@ -753,10 +932,11 @@ with col2:
                     st.markdown("**Debug — crop model outputs**")
                     st.write({"prediction": str(prediction), "confidence": float(confidence) if confidence is not None else None})
 
-                # Display results (no hard confidence threshold)
-                st.success(f"🌱 **Recommended Crop: {prediction.title()}**")
-                if confidence is not None:
-                    st.info(f"🎯 **Confidence: {confidence:.2%}**")
+                # Display results only if prediction was successful
+                if prediction != 'unknown':
+                    st.success(f"🌱 **Recommended Crop: {prediction.title()}**")
+                    if confidence is not None:
+                        st.info(f"🎯 **Confidence: {confidence:.2%}**")
                     
                     # Add crop information
                     crop_info = {
