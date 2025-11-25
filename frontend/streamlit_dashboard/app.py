@@ -11,6 +11,8 @@ import plotly.express as px
 from google.oauth2 import service_account
 from google.auth.transport.requests import Request
 import json
+import tensorflow as tf
+from PIL import Image
 
 
 # Set page configuration
@@ -304,7 +306,8 @@ with st.expander("Live Sensor Data (IoT)", expanded=False):
 MODEL_STATUS = {
     'crop_model': False,
     'irrigation_model': False,
-    'optimization_model': False
+    'optimization_model': False,
+    'soil_model': False
 }
 
 def load_crop_model():
@@ -382,10 +385,65 @@ def load_optimization_model():
         MODEL_STATUS['optimization_model'] = False
         return None
 
+MODEL_STATUS = {'soil_model': False} 
+
+def load_soil_model():
+    """Load TensorFlow soil type classification model (supports .h5 and SavedModel)"""
+    # يجب تعريف _file_ بشكل صحيح في بيئة Streamlit
+    # سنستخدم اسم ملف وهمي لكي يعمل الكود هنا
+    _file_ = __file__ # يجب أن يكون هذا السطر موجودًا في الملف الأصلي
+
+    # Get the absolute path to the repository root
+    current_file = os.path.abspath(_file_)
+    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file)))
+    
+    # Try loading .h5 file first (your model)
+    h5_path = os.path.join(repo_root, "soil_model_savedmodel", "my_soil_model.h5")
+    savedmodel_path = os.path.join(repo_root, "soil_model_savedmodel")
+    
+    # قائمة التسميات الصحيحة التي تدرب عليها النموذج (مستخلصة من إخراجك السابق)
+    # هذا الترتيب يجب أن يطابق ترتيب الفئات في مجلدات التدريب: (0: Peat, 1: Sandy, 2: Silt)
+    CORRECT_SOIL_LABELS = ["Peat Soil", "Sandy Soil", "Silt Soil"]
+    
+    # Try .h5 model first
+    if os.path.exists(h5_path):
+        try:
+            # Use compile=False to avoid Keras 3 compatibility issues with custom layers
+            model = tf.keras.models.load_model(h5_path, compile=False)
+            MODEL_STATUS['soil_model'] = True
+            
+            # --- الإصلاح هنا: استخدام التسميات الصحيحة ---
+            soil_labels = CORRECT_SOIL_LABELS
+            
+            return model, soil_labels
+        except Exception as e:
+            st.error(f"Error loading H5 model from {h5_path}: {type(e).__name__}: {e}")
+    
+    # Fallback to SavedModel
+    elif os.path.exists(savedmodel_path):
+        try:
+            from tensorflow.keras.layers import TFSMLayer
+            model = TFSMLayer(savedmodel_path, call_endpoint='serving_default')
+            MODEL_STATUS['soil_model'] = True
+            
+            # --- الإصلاح هنا: استخدام التسميات الصحيحة ---
+            soil_labels = CORRECT_SOIL_LABELS
+            
+            st.info(f"ℹ Using SavedModel from: {savedmodel_path}")
+            return model, soil_labels
+        except Exception as e:
+            st.error(f"Error loading SavedModel from {savedmodel_path}: {type(e).__name__}: {e}")
+    
+    # No model found
+    st.warning(f"⚠ Soil model not found. Tried:\n- {h5_path}\n- {savedmodel_path}")
+    MODEL_STATUS['soil_model'] = False
+    return None, None
+
 # Load all models
 crop_model = load_crop_model()
 irrigation_model = load_irrigation_model()
 optimization_model = load_optimization_model()
+soil_model, soil_labels = load_soil_model()
 
 
 def fetch_latest_iot_reading():
@@ -429,6 +487,67 @@ def fetch_latest_iot_reading():
         return result
     except Exception:
         return None
+
+# Soil classification function
+def predict_soil_type(image, soil_model, soil_labels):
+    """Predict soil type from uploaded image using TensorFlow model"""
+    if soil_model is None or soil_labels is None:
+        return None, None, "Model not loaded", None
+    
+    try:
+        # Enhanced preprocessing for better accuracy
+        # 1. Convert to RGB if needed
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+        
+        # 2. Resize to model input size (224x224)
+        img = image.resize((224, 224), Image.Resampling.LANCZOS)
+        
+        # 3. Convert to array
+        img_array = np.array(img, dtype=np.float32)
+        
+        # 4. Normalize to [0, 1] range (standard for most models)
+        img_array = img_array / 255.0
+        
+        # 5. Add batch dimension
+        img_array = np.expand_dims(img_array, axis=0)
+        
+        # 6. Predict using the model
+        if hasattr(soil_model, 'predict'):
+            # H5 model - use standard predict
+            predictions = soil_model.predict(img_array, verbose=0)
+            all_probs = predictions[0]
+        else:
+            # TFSMLayer - returns dictionary
+            img_tensor = tf.convert_to_tensor(img_array, dtype=tf.float32)
+            output = soil_model(img_tensor)
+            
+            # Extract predictions from output dictionary
+            predictions = None
+            for key in output.keys():
+                predictions = output[key].numpy()
+                break
+            
+            if predictions is None:
+                return None, None, "Could not extract predictions from model output", None
+            
+            all_probs = predictions[0]
+        
+        # Apply softmax to normalize probabilities if they're not already normalized
+        if not np.isclose(np.sum(all_probs), 1.0, rtol=0.1):
+            exp_probs = np.exp(all_probs - np.max(all_probs))  # Numerical stability
+            all_probs = exp_probs / np.sum(exp_probs)
+        
+        # Get predicted class and confidence
+        predicted_class = np.argmax(all_probs)
+        confidence = float(all_probs[predicted_class])
+        
+        # --- هذا السطر يستخدم القائمة المصححة ---
+        soil_type = soil_labels[predicted_class]
+        
+        return soil_type, confidence, None, all_probs
+    except Exception as e:
+        return None, None, f"Prediction error: {e}", None
 
 # Feature engineering functions
 def create_irrigation_features(soil_moisture, temperature, humidity, ph, n, p, k, rainfall=0):
@@ -877,6 +996,70 @@ with col1:
     # wind_speed and pressure remain manual inputs (always editable)
     wind_speed = st.number_input("🌬️ Wind Speed (km/h)", min_value=0.0, max_value=50.0, value=float(wind_speed_default), help="Wind speed")
     pressure = st.number_input("🌡️ Pressure (kPa)", min_value=80.0, max_value=110.0, value=float(pressure_default), help="Atmospheric pressure")
+    
+    # === SOIL TYPE CLASSIFICATION SECTION ===
+    st.divider()
+    st.header("🏞️ Soil Type Classification")
+    st.markdown("Upload a soil image to identify the soil type using AI")
+    
+    uploaded_file = st.file_uploader("Choose a soil image...", type=["jpg", "jpeg", "png"], help="Upload a clear image of the soil surface")
+    
+    if uploaded_file is not None:
+        # Display uploaded image
+        image = Image.open(uploaded_file)
+        col_img1, col_img2, col_img3 = st.columns([1, 2, 1])
+        with col_img2:
+            st.image(image, caption="Uploaded Soil Image", use_container_width=True)
+        
+        # Classify button
+        if st.button("🔍 Classify Soil Type", type="primary", use_container_width=True, key="classify_soil"):
+            if not MODEL_STATUS.get('soil_model') or soil_model is None:
+                st.error("❌ **SOIL CLASSIFIER NOT LOADED**: Cannot classify soil type")
+                st.info("🔄 Please ensure soil_model_savedmodel is available in the project root")
+            else:
+                with st.spinner("🔄 Analyzing soil image..."):
+                    # Get prediction with all probabilities
+                    result = predict_soil_type(image, soil_model, soil_labels)
+                    
+                    if len(result) == 3:
+                        soil_type, confidence, error = result
+                        all_probs = None
+                    else:
+                        soil_type, confidence, error, all_probs = result
+                    
+                    if error:
+                        st.error(f"❌ Classification failed: {error}")
+                    else:
+                        st.success("✅ Classification Complete!")
+                        
+                        # Display result in a nice card (without confidence)
+                        st.markdown(f"""
+                        <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; text-align: center; margin: 20px 0;">
+                            <h2 style="color: #2e7d32; margin: 0;">🌍 Predicted Soil Type</h2>
+                            <h1 style="color: #1976d2; margin: 10px 0; font-size: 3em;">{soil_type}</h1>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        # Soil type information
+                        soil_info = {
+                            'Alluvial': '🌊 **Alluvial Soil**: Rich in minerals and nutrients, formed by river deposits. Excellent for agriculture with good water retention.',
+                            'Black': '🖤 **Black Soil**: High in clay content, rich in calcium, iron, and magnesium. Ideal for cotton cultivation and retains moisture well.',
+                            'Clay': '🧱 **Clay Soil**: Heavy texture with very fine particles. Good water retention but poor drainage. Needs proper management for cultivation.',
+                            'Red': '🔴 **Red Soil**: Contains iron oxide giving it red color. Good for crops like groundnuts, potatoes, and pulses. Moderate fertility.'
+                        }
+                        
+                        if soil_type in soil_info:
+                            st.info(soil_info[soil_type])
+                        
+                        # Add interpretation help
+                        if confidence < 0.6:
+                            st.warning("⚠️ **Low Confidence**: The model is not very confident about this prediction. Consider taking a clearer photo with better lighting.")
+                        elif confidence < 0.8:
+                            st.info("ℹ️ **Medium Confidence**: The prediction is reasonably confident but could be improved with a better quality image.")
+                        else:
+                            st.success("💡 **High Confidence**: The model is very confident about this prediction!")
+                        
+                        st.success("💡 **Tip**: For best results, use clear, well-lit images showing the soil texture and color clearly.")
 
 with col2:
     st.header("🎯 Recommendations & Decisions")
