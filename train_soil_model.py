@@ -22,7 +22,7 @@ tf.random.set_seed(42)
 # Configuration
 IMG_SIZE = (224, 224)
 BATCH_SIZE = 8  # Small batch size due to limited data
-EPOCHS = 50
+EPOCHS = 20  # Reduced for faster training
 LEARNING_RATE = 0.0001
 
 # Paths
@@ -187,7 +187,7 @@ print("\n🚀 Continuing training with fine-tuning...")
 history_fine = model.fit(
     train_generator,
     validation_data=validation_generator,
-    epochs=20,
+    epochs=10,  # Reduced for faster training
     callbacks=callbacks,
     verbose=1
 )

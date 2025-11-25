@@ -415,6 +415,7 @@ def load_soil_model():
             # --- الإصلاح هنا: استخدام التسميات الصحيحة ---
             soil_labels = CORRECT_SOIL_LABELS
             
+            st.success(f"✅ Loaded H5 model from: {h5_path}")
             return model, soil_labels
         except Exception as e:
             st.error(f"Error loading H5 model from {h5_path}: {type(e).__name__}: {e}")
