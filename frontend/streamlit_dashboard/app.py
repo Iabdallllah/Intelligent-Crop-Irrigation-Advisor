@@ -17,10 +17,982 @@ from PIL import Image
 
 # Set page configuration
 st.set_page_config(
-    page_title="AgriTech",
+    page_title="AgriTech Smart Advisor",
     page_icon="🌱",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
+
+# 🏆 ELITE ENTERPRISE DESIGN - World-Class AgriTech Intelligence Platform
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    
+    /* ============================================
+       💎 REFINED LUXURY COLOR SYSTEM
+       Elite enterprise AgriTech palette
+    ============================================ */
+    :root {
+        /* Deep Charcoal Foundation */
+        --bg-primary: #0B0F12;
+        --bg-secondary: #0F1419;
+        --bg-tertiary: #141B22;
+        --bg-card: #12171C;
+        --bg-elevated: #16\1C23;
+        --bg-overlay: #1A2129;
+        
+        /* Refined Emerald Intelligence */
+        --emerald-primary: #10B981;
+        --emerald-light: #34D399;
+        --emerald-glow: rgba(16, 185, 129, 0.25);
+        --teal-accent: #14B8A6;
+        --cyan-subtle: #06B6D4;
+        
+        /* Precision Neutrals */
+        --border-subtle: rgba(255, 255, 255, 0.06);
+        --border-medium: rgba(255, 255, 255, 0.10);
+        --border-strong: rgba(255, 255, 255, 0.15);
+        
+        /* Typography Hierarchy */
+        --text-primary: #F9FAFB;
+        --text-secondary: #D1D5DB;
+        --text-tertiary: #9CA3AF;
+        --text-muted: #6B7280;
+        --text-disabled: #4B5563;
+        
+        /* Intelligent Accents */
+        --accent-success: #10B981;
+        --accent-warning: #F59E0B;
+        --accent-error: #EF4444;
+        --accent-info: #3B82F6;
+        
+        /* Elevation System */
+        --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+        --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+        --elevation-3: 0 8px 24px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(0, 0, 0, 0.4);
+        --elevation-4: 0 16px 48px rgba(0, 0, 0, 0.6), 0 8px 16px rgba(0, 0, 0, 0.5);
+        
+        /* Glow Effects */
+        --glow-emerald: 0 0 24px rgba(16, 185, 129, 0.2);
+        --glow-subtle: 0 0 32px rgba(16, 185, 129, 0.1);
+        --glow-strong: 0 0 48px rgba(16, 185, 129, 0.3);
+    }
+    
+    /* ============================================
+       🎯 ELITE FOUNDATION & RESETS
+    ============================================ */
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-feature-settings: 'cv11', 'ss01', 'ss02';
+    }
+    
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Luxury Background with Vignette */
+    .main {
+        background: 
+            radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(6, 182, 212, 0.02) 0%, transparent 50%),
+            linear-gradient(180deg, #0B0F12 0%, #0F1419 50%, #0B0F12 100%);
+        background-attachment: fixed;
+        position: relative;
+    }
+    
+    .main::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 50% 50%, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+        pointer-events: none;
+        z-index: 1;
+    }
+    
+    .block-container {
+        padding-top: 3rem !important;
+        padding-bottom: 5rem !important;
+        max-width: 1360px !important;
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* ============================================
+       👑 ELITE HERO HEADER
+       Floating luxury intelligence banner
+    ============================================ */
+    .premium-hero {
+        position: relative;
+        background: 
+            linear-gradient(135deg, 
+                rgba(16, 185, 129, 0.12) 0%,
+                rgba(20, 184, 166, 0.08) 50%,
+                rgba(6, 182, 212, 0.05) 100%),
+            linear-gradient(180deg, 
+                var(--bg-elevated) 0%,
+                var(--bg-card) 100%);
+        padding: 4rem 3.5rem;
+        border-radius: 20px;
+        margin-bottom: 3.5rem;
+        overflow: hidden;
+        box-shadow: 
+            var(--elevation-4),
+            var(--glow-subtle),
+            0 0 0 1px var(--border-subtle) inset;
+        border: 1px solid var(--border-medium);
+        backdrop-filter: blur(24px);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .premium-hero:hover {
+        transform: translateY(-2px);
+    }
+    
+    .premium-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(0, 255, 136, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: float 20s ease-in-out infinite;
+    }
+    
+    .premium-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -10%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(6, 182, 212, 0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: float 15s ease-in-out infinite reverse;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        33% { transform: translate(30px, -30px) rotate(120deg); }
+        66% { transform: translate(-20px, 20px) rotate(240deg); }
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 10;
+    }
+    
+    .hero-logo {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        filter: drop-shadow(0 4px 20px rgba(0, 255, 136, 0.5));
+        animation: pulse-glow 3s ease-in-out infinite;
+    }
+    
+    @keyframes pulse-glow {
+        0%, 100% { filter: drop-shadow(0 4px 20px rgba(0, 255, 136, 0.5)); }
+        50% { filter: drop-shadow(0 4px 40px rgba(0, 255, 136, 0.8)); }
+    }
+    
+    .hero-title {
+        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+        font-size: 3.75rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin: 0;
+        letter-spacing: -0.03em;
+        text-shadow: 0 2px 40px rgba(0, 0, 0, 0.5);
+        line-height: 1.05;
+        background: linear-gradient(135deg, #ffffff 0%, #d1fae5 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.125rem;
+        color: var(--text-secondary);
+        margin: 1.25rem 0 0 0;
+        font-weight: 500;
+        letter-spacing: 0.005em;
+        line-height: 1.6;
+    }
+    
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.65rem 1.5rem;
+        background: rgba(16, 185, 129, 0.08);
+        border: 1px solid var(--border-medium);
+        border-radius: 100px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--emerald-light);
+        margin-top: 2rem;
+        backdrop-filter: blur(12px);
+        box-shadow: 
+            0 4px 16px rgba(0, 0, 0, 0.3),
+            0 0 0 1px rgba(16, 185, 129, 0.1) inset;
+        transition: all 0.3s ease;
+    }
+    
+    .hero-badge:hover {
+        background: rgba(16, 185, 129, 0.12);
+        border-color: var(--emerald-primary);
+        box-shadow: 
+            0 6px 24px rgba(16, 185, 129, 0.2),
+            0 0 0 1px rgba(16, 185, 129, 0.2) inset;
+    }
+    
+    /* ============================================
+       💎 UNIFIED GLASS CARDS - Elite Components
+    ============================================ */
+    .glass-card {
+        background: 
+            linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.03) 0%,
+                rgba(255, 255, 255, 0.01) 100%),
+            var(--bg-card);
+        backdrop-filter: blur(24px) saturate(180%);
+        -webkit-backdrop-filter: blur(24px) saturate(180%);
+        border: 1px solid var(--border-subtle);
+        border-radius: 18px;
+        padding: 2.25rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--elevation-2);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .glass-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, 
+            transparent 0%,
+            rgba(16, 185, 129, 0.3) 50%,
+            transparent 100%);
+        opacity: 0.6;
+    }
+    
+    .glass-card:hover {
+        transform: translateY(-3px);
+        border-color: var(--border-medium);
+        box-shadow: 
+            var(--elevation-3),
+            var(--glow-subtle);
+    }
+    
+    .glass-card-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--glass-border);
+    }
+    
+    .glass-card-icon {
+        font-size: 2.5rem;
+        filter: drop-shadow(0 0 10px var(--neon-green));
+    }
+    
+    .glass-card-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+        letter-spacing: -0.01em;
+    }
+    
+    .glass-card-subtitle {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin: 0.25rem 0 0 0;
+        font-weight: 400;
+    }
+    
+    /* ============================================
+       📊 ELITE METRIC CARDS - Unified System
+    ============================================ */
+    .premium-metric {
+        background: 
+            linear-gradient(135deg,
+                rgba(16, 185, 129, 0.06) 0%,
+                rgba(6, 182, 212, 0.04) 100%),
+            var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 18px;
+        padding: 1.75rem;
+        text-align: center;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--elevation-1);
+    }
+    
+    .premium-metric::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .premium-metric:hover {
+        transform: translateY(-3px);
+        border-color: var(--border-medium);
+        box-shadow: 
+            var(--elevation-2),
+            var(--glow-subtle);
+    }
+    
+    .premium-metric:hover::before {
+        opacity: 1;
+    }
+    
+    .metric-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+        display: block;
+        filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.5));
+    }
+    
+    .metric-value {
+        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, 
+            var(--emerald-primary) 0%, 
+            var(--teal-accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0.5rem 0;
+        letter-spacing: -0.02em;
+    }
+    
+    .metric-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+    
+    .metric-delta {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.25rem;
+        font-weight: 500;
+    }
+    
+    /* ============================================
+       🎯 RESULT CARDS - Base Luxury Styling
+    ============================================ */
+    .result-card {
+        position: relative;
+        background: 
+            linear-gradient(135deg,
+                rgba(16, 185, 129, 0.06) 0%,
+                rgba(6, 182, 212, 0.03) 100%),
+            var(--bg-card);
+        border: 1px solid var(--border-medium);
+        border-radius: 18px;
+        padding: 2rem;
+        margin: 1.5rem 0;
+        box-shadow: 
+            var(--elevation-2),
+            var(--glow-subtle);
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .result-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--emerald-primary);
+        box-shadow: 
+            var(--elevation-3),
+            var(--glow-emerald);
+    }
+    
+    .result-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .result-icon {
+        font-size: 2.5rem;
+        filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.4));
+    }
+    
+    .result-title {
+        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin: 0;
+    }
+    
+    .result-value {
+        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, 
+            var(--emerald-primary) 0%, 
+            var(--teal-accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0.5rem 0;
+        letter-spacing: -0.02em;
+    }
+    
+    .confidence-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 0.875rem;
+        letter-spacing: 0.01em;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+    
+    .confidence-high {
+        background: linear-gradient(135deg, 
+            rgba(16, 185, 129, 0.15) 0%, 
+            rgba(16, 185, 129, 0.08) 100%);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: var(--emerald-light);
+    }
+    
+    .confidence-medium {
+        background: linear-gradient(135deg, 
+            rgba(251, 191, 36, 0.15) 0%, 
+            rgba(251, 191, 36, 0.08) 100%);
+        border: 1px solid rgba(251, 191, 36, 0.3);
+        color: #FCD34D;
+    }
+    
+    .confidence-low {
+        background: linear-gradient(135deg, 
+            rgba(239, 68, 68, 0.15) 0%, 
+            rgba(239, 68, 68, 0.08) 100%);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #FCA5A5;
+    }
+    
+    /* ============================================
+       📦 INFO & SUCCESS BOXES - Luxury Notifications
+    ============================================ */
+    .success-box {
+        background: 
+            linear-gradient(135deg,
+                rgba(16, 185, 129, 0.08) 0%,
+                rgba(16, 185, 129, 0.04) 100%),
+            var(--bg-card);
+        border-left: 3px solid var(--emerald-primary);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        color: var(--text-primary);
+        backdrop-filter: blur(10px);
+        box-shadow: var(--elevation-1);
+    }
+    
+    .success-box h4 {
+        color: var(--emerald-primary);
+        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+        font-weight: 700;
+        margin-top: 0;
+        margin-bottom: 1rem;
+    }
+    
+    .info-box {
+        background: 
+            linear-gradient(135deg,
+                rgba(59, 130, 246, 0.08) 0%,
+                rgba(59, 130, 246, 0.04) 100%),
+            var(--bg-card);
+        border-left: 3px solid var(--accent-info);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        color: var(--text-primary);
+        backdrop-filter: blur(10px);
+        box-shadow: var(--elevation-1);
+    }
+    
+    .info-box p {
+        margin: 0;
+        color: var(--text-secondary);
+    }
+    
+    .custom-card {
+        background: 
+            linear-gradient(135deg,
+                rgba(16, 185, 129, 0.06) 0%,
+                rgba(6, 182, 212, 0.03) 100%),
+            var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 18px;
+        padding: 2rem;
+        margin: 1.5rem 0;
+        box-shadow: var(--elevation-1);
+    }
+    
+    .custom-card h3 {
+        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-top: 0;
+        margin-bottom: 0.75rem;
+        font-size: 1.5rem;
+    }
+    
+    .custom-card p {
+        color: var(--text-secondary);
+        margin: 0;
+    }
+    
+    /* ============================================
+       🎯 ELITE AI RESULT CARDS - Elevated Intelligence
+    ============================================ */
+    .result-card-premium {
+        position: relative;
+        background: 
+            linear-gradient(135deg,
+                rgba(16, 185, 129, 0.08) 0%,
+                rgba(6, 182, 212, 0.04) 100%),
+            var(--bg-card);
+        border: 1px solid var(--border-medium);
+        border-radius: 18px;
+        padding: 2.75rem;
+        margin: 2.5rem 0;
+        box-shadow: 
+            var(--elevation-3),
+            var(--glow-emerald),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .result-card-premium::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(16, 185, 129, 0.12), 
+            transparent);
+        transition: left 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .result-card-premium:hover::before {
+        left: 100%;
+    }
+    
+    .result-card-premium:hover {
+        transform: translateY(-4px);
+        border-color: var(--emerald-primary);
+        box-shadow: 
+            var(--elevation-4),
+            0 0 40px rgba(16, 185, 129, 0.25),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+    
+    .result-header-premium {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .result-icon-premium {
+        font-size: 4rem;
+        animation: float-icon 3s ease-in-out infinite;
+        filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.6));
+    }
+    
+    @keyframes float-icon {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .result-title-premium {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+        letter-spacing: -0.01em;
+    }
+    
+    .result-value-premium {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 3.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--neon-green), var(--mint));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 1.5rem 0;
+        text-align: center;
+        padding: 1.5rem;
+        border-radius: 15px;
+        background-color: rgba(0, 255, 136, 0.05);
+        letter-spacing: -0.02em;
+        text-shadow: 0 0 40px rgba(0, 255, 136, 0.3);
+    }
+    
+    /* ============================================
+       🏅 CONFIDENCE BADGES - Premium Status
+    ============================================ */
+    .confidence-badge-premium {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.25rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        letter-spacing: 0.02em;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+    
+    .confidence-high-premium {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+        border: 1px solid var(--emerald);
+        color: var(--neon-green);
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    
+    .confidence-medium-premium {
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.1));
+        border: 1px solid var(--amber-premium);
+        color: #fbbf24;
+        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+    }
+    
+    .confidence-low-premium {
+        background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(244, 63, 94, 0.1));
+        border: 1px solid var(--rose-alert);
+        color: #f87171;
+        box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3);
+    }
+    
+    /* ============================================
+       🔘 ELITE BUTTONS - Glowing Magnetic Interactions
+    ============================================ */
+    .stButton > button {
+        background: linear-gradient(135deg, 
+            var(--emerald-primary) 0%, 
+            var(--emerald-dark) 100%);
+        color: white;
+        border: 1px solid rgba(16, 185, 129, 0.4);
+        border-radius: 16px;
+        padding: 0.875rem 2.25rem;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        letter-spacing: 0.01em;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 
+            var(--elevation-1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stButton > button::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.15);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                    height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .stButton > button:hover::before {
+        width: 320px;
+        height: 320px;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        border-color: rgba(16, 185, 129, 0.6);
+        box-shadow: 
+            var(--elevation-2),
+            var(--glow-emerald),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        background: linear-gradient(135deg, 
+            var(--emerald-bright) 0%, 
+            var(--emerald-primary) 100%);
+    }
+    
+    .stButton > button:active {
+        transform: translateY(-1px) scale(0.99);
+        box-shadow: 
+            var(--elevation-1),
+            inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* ============================================
+       📝 ELITE INPUT FIELDS - Apple-Style Inset
+    ============================================ */
+    .stNumberInput > div > div > input,
+    .stTextInput > div > div > input,
+    .stTextArea > div > div > textarea {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid var(--border-subtle) !important;
+        border-radius: 12px !important;
+        color: var(--text-primary) !important;
+        padding: 0.875rem 1.125rem !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.9375rem !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 
+            inset 0 1px 3px rgba(0, 0, 0, 0.3),
+            0 1px 0 rgba(255, 255, 255, 0.03) !important;
+    }
+    
+    .stNumberInput > div > div > input:focus,
+    .stTextInput > div > div > input:focus,
+    .stTextArea > div > div > textarea:focus {
+        border-color: var(--border-medium) !important;
+        box-shadow: 
+            inset 0 1px 3px rgba(0, 0, 0, 0.25),
+            0 0 0 3px rgba(16, 185, 129, 0.12),
+            var(--glow-subtle) !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+        outline: none !important;
+    }
+    
+    .stNumberInput label,
+    .stTextInput label,
+    .stTextArea label {
+        color: var(--text-secondary) !important;
+        font-weight: 500 !important;
+        font-size: 0.9rem !important;
+        letter-spacing: 0.01em !important;
+    }
+    
+    /* ============================================
+       🎨 PREMIUM INFO BOXES - Status Messages
+    ============================================ */
+    .info-box-premium {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+        border-left: 4px solid var(--electric-blue);
+        padding: 1.25rem;
+        border-radius: 12px;
+        margin: 1.5rem 0;
+        color: var(--text-primary);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15);
+    }
+    
+    .success-box-premium {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+        border-left: 4px solid var(--neon-green);
+        padding: 1.25rem;
+        border-radius: 12px;
+        margin: 1.5rem 0;
+        color: var(--text-primary);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);
+    }
+    
+    .warning-box-premium {
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(251, 191, 36, 0.05));
+        border-left: 4px solid var(--amber-premium);
+        padding: 1.25rem;
+        border-radius: 12px;
+        margin: 1.5rem 0;
+        color: var(--text-primary);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.15);
+    }
+    
+    /* ============================================
+       ⚡ SECTION DIVIDERS - Elite Vertical Rhythm
+    ============================================ */
+    .premium-divider {
+        height: 1px;
+        background: linear-gradient(90deg, 
+            transparent 0%,
+            rgba(16, 185, 129, 0.3) 50%,
+            transparent 100%);
+        margin: 3.5rem 0;
+        opacity: 0.4;
+    }
+    
+    /* ============================================
+       📊 STREAMLIT COMPONENT OVERRIDES
+    ============================================ */
+    .stExpander {
+        background: var(--glass-bg) !important;
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 16px !important;
+        backdrop-filter: blur(10px) !important;
+    }
+    
+    .streamlit-expanderHeader {
+        background: transparent !important;
+        color: var(--text-primary) !important;
+        font-weight: 600 !important;
+        font-size: 1.1rem !important;
+        padding: 1rem 1.5rem !important;
+    }
+    
+    .streamlit-expanderHeader:hover {
+        background: rgba(0, 255, 136, 0.05) !important;
+    }
+    
+    
+    /* ============================================
+       🎭 PREMIUM SIDEBAR - Dark Mode Navigation
+    ============================================ */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, 
+            #0a0e12 0%,
+            #111418 50%,
+            #0d1117 100%);
+        border-right: 1px solid var(--glass-border);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+    }
+    
+    [data-testid="stSidebar"] .element-container {
+        color: var(--text-primary);
+    }
+    
+    [data-testid="collapsedControl"] {
+        color: var(--text-primary);
+        background: var(--bg-card);
+        border-radius: 50%;
+    }
+    
+    /* ============================================
+       📊 DATA TABLES - Modern Grid
+    ============================================ */
+    .dataframe {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+    
+    .dataframe thead tr th {
+        background: rgba(16, 185, 129, 0.1) !important;
+        color: var(--neon-green) !important;
+        font-weight: 600 !important;
+        padding: 1rem !important;
+    }
+    
+    .dataframe tbody tr {
+        background: rgba(255, 255, 255, 0.02) !important;
+        color: var(--text-secondary) !important;
+        transition: background 0.2s ease;
+    }
+    
+    .dataframe tbody tr:hover {
+        background: rgba(0, 255, 136, 0.05) !important;
+    }
+    
+    /* ============================================
+       🎬 ANIMATIONS & MICRO-INTERACTIONS
+    ============================================ */
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes shimmer {
+        0% { background-position: -1000px 0; }
+        100% { background-position: 1000px 0; }
+    }
+    
+    .animate-slide-in {
+        animation: slideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    
+    .animate-fade-in {
+        animation: fadeIn 0.8s ease-in-out;
+    }
+    
+    /* ============================================
+       🔍 RESPONSIVE DESIGN - Mobile Optimization
+    ============================================ */
+    @media (max-width: 768px) {
+        .premium-hero {
+            padding: 2rem 1.5rem;
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1rem;
+        }
+        
+        .glass-card {
+            padding: 1.5rem;
+        }
+        
+        .result-value-premium {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+""", unsafe_allow_html=True)
 
 
 # Load environment variables from .env (local) and support Streamlit Cloud secrets
@@ -47,23 +1019,41 @@ try:
 except Exception:
     pass
 
-st.title("🌾 AgriTech")
-st.markdown("### Get intelligent crop recommendations and irrigation decisions based on soil and environmental conditions")
+# 🏆 PREMIUM HERO HEADER - World-Class Design
+st.markdown("""
+<div class="premium-hero">
+    <div class="hero-content">
+        <div class="hero-logo">🌱</div>
+        <h1 class="hero-title">AgriTech Smart Advisor</h1>
+        <p class="hero-subtitle">AI-Powered Precision Agriculture | Enterprise Crop & Irrigation Intelligence</p>
+        <span class="hero-badge">✨ Powered by Advanced Machine Learning</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
-# --- IoT Live Data Section ---
-with st.expander("Live Sensor Data (IoT)", expanded=False):
-    st.markdown("Click 'Refresh Data' to fetch latest readings from Supabase or use demo data")
+# --- 📡 IoT Live Data Section - Premium Glass Design ---
+with st.expander("📡 Live Sensor Data (IoT Monitoring)", expanded=False):
+    st.markdown("""
+    <div class="glass-card">
+        <div class="glass-card-header">
+            <div>
+                <h3 class="glass-card-title">Real-time Environmental Monitoring</h3>
+                <p class="glass-card-subtitle">Fetch live IoT sensor data or load demo telemetry</p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Supabase credentials (from .env or Streamlit secrets)
     SUPABASE_URL = os.getenv("SUPABASE_URL") or (st.secrets.get("SUPABASE_URL") if hasattr(st, "secrets") else None)
     SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY") or (st.secrets.get("SUPABASE_SERVICE_KEY") if hasattr(st, "secrets") else None)
     
     # Button row
-    btn_col1, btn_col2 = st.columns(2)
+    btn_col1, btn_col2, btn_col3 = st.columns([1, 1, 2])
     with btn_col1:
-        refresh_btn = st.button("🔄 Refresh Data", disabled=(not SUPABASE_URL or not SUPABASE_KEY))
+        refresh_btn = st.button("🔄 Refresh Data", disabled=(not SUPABASE_URL or not SUPABASE_KEY), use_container_width=True)
     with btn_col2:
-        demo_btn = st.button("🎲 Load Demo Data")
+        demo_btn = st.button("🎲 Demo Data", use_container_width=True)
     
     # Demo data function
     def generate_demo_data():
@@ -100,36 +1090,61 @@ with st.expander("Live Sensor Data (IoT)", expanded=False):
                         df_sorted = df.sort_values("created_at")
                         
                         # Quick Stats Section
-                        st.subheader("📊 Latest Sensor Readings")
+                        st.markdown('<div class="premium-divider"></div>', unsafe_allow_html=True)
+                        st.markdown("#### 📊 Latest Sensor Readings")
                         cols = st.columns(4)
                         
                         if "temperature" in df.columns:
                             with cols[0]:
                                 latest_temp = df.iloc[0].get("temperature", "N/A")
                                 avg_temp = df["temperature"].mean()
-                                st.metric("🌡️ Temperature", f"{latest_temp:.1f}°C" if isinstance(latest_temp, (int, float)) else latest_temp, 
-                                         delta=f"Avg: {avg_temp:.1f}°C")
+                                st.markdown(f"""
+                                <div class="premium-metric">
+                                    <span class="metric-icon">🌡️</span>
+                                    <div class="metric-label">Temperature</div>
+                                    <div class="metric-value">{latest_temp:.1f}°C</div>
+                                    <div class="metric-delta">Avg: {avg_temp:.1f}°C</div>
+                                </div>
+                                """, unsafe_allow_html=True)
                         
                         if "humidity" in df.columns:
                             with cols[1]:
                                 latest_hum = df.iloc[0].get("humidity", "N/A")
                                 avg_hum = df["humidity"].mean()
-                                st.metric("💧 Humidity", f"{latest_hum:.1f}%" if isinstance(latest_hum, (int, float)) else latest_hum,
-                                         delta=f"Avg: {avg_hum:.1f}%")
+                                st.markdown(f"""
+                                <div class="premium-metric">
+                                    <span class="metric-icon">💧</span>
+                                    <div class="metric-label">Humidity</div>
+                                    <div class="metric-value">{latest_hum:.1f}%</div>
+                                    <div class="metric-delta">Avg: {avg_hum:.1f}%</div>
+                                </div>
+                                """, unsafe_allow_html=True)
                         
                         if "soil_moisture" in df.columns:
                             with cols[2]:
                                 latest_sm = df.iloc[0].get("soil_moisture", "N/A")
                                 avg_sm = df["soil_moisture"].mean()
-                                st.metric("🌱 Soil Moisture", f"{latest_sm:.1f}%" if isinstance(latest_sm, (int, float)) else latest_sm,
-                                         delta=f"Avg: {avg_sm:.1f}%")
+                                st.markdown(f"""
+                                <div class="premium-metric">
+                                    <span class="metric-icon">🌱</span>
+                                    <div class="metric-label">Soil Moisture</div>
+                                    <div class="metric-value">{latest_sm:.1f}%</div>
+                                    <div class="metric-delta">Avg: {avg_sm:.1f}%</div>
+                                </div>
+                                """, unsafe_allow_html=True)
                         
                         if "water_level" in df.columns:
                             with cols[3]:
                                 latest_wl = df.iloc[0].get("water_level", "N/A")
                                 avg_wl = df["water_level"].mean()
-                                st.metric("💦 Water Level", f"{latest_wl:.1f}" if isinstance(latest_wl, (int, float)) else latest_wl,
-                                         delta=f"Avg: {avg_wl:.1f}")
+                                st.markdown(f"""
+                                <div class="premium-metric">
+                                    <span class="metric-icon">💦</span>
+                                    <div class="metric-label">Water Level</div>
+                                    <div class="metric-value">{latest_wl:.1f}</div>
+                                    <div class="metric-delta">Avg: {avg_wl:.1f}</div>
+                                </div>
+                                """, unsafe_allow_html=True)
                         
                         st.divider()
                         
@@ -418,7 +1433,7 @@ def load_soil_model():
             return model, soil_labels
         except Exception as e:
             st.error(f"Error loading H5 model from {h5_path}: {type(e).__name__}: {e}")
-    
+
     # Fallback to SavedModel
     elif os.path.exists(savedmodel_path):
         try:
@@ -914,8 +1929,10 @@ def check_system_status():
         st.success("✅ **System Status: OPERATIONAL** - All models loaded successfully")
         return True
 
-# Check system status
+# Check system status with styled output
+st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
 system_operational = check_system_status()
+st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
 
 # Try to auto-fill inputs from the latest IoT reading (if available)
 sensor_defaults = fetch_latest_iot_reading() or {}
@@ -933,13 +1950,24 @@ wind_speed_default = _safe_default('wind_speed', 8.0)
 pressure_default = _safe_default('pressure', 101.3)
 rain_default = _safe_default('rainfall', 240.0)
 
-# Create two columns layout
-col1, col2 = st.columns([1, 1])
+# Create two columns layout with improved spacing
+col1, col2 = st.columns([1, 1], gap="large")
 
 with col1:
-    st.header("📊 Soil & Environment Data")
+    st.markdown("""
+    <div class="glass-card animate-slide-in">
+        <div class="glass-card-header">
+            <span class="glass-card-icon">📊</span>
+            <div>
+                <h3 class="glass-card-title">Input Parameters</h3>
+                <p class="glass-card-subtitle">Configure soil nutrients and environmental conditions</p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
     # Option to auto-fill selected inputs from IoT and lock those widgets
-    auto_fill = st.checkbox("🔁 Auto-fill Temperature / Humidity / Soil Moisture from IoT", value=True, help="When enabled, temperature, humidity and soil moisture are populated from IoT and locked for editing")
+    auto_fill = st.checkbox("🔁 Auto-fill from IoT Sensors", value=True, help="Automatically populate Temperature, Humidity, and Soil Moisture from live sensors")
 
     # Manual refresh button to fetch latest IoT values into session state
     if st.button("🔄 Fetch IoT Now"):
@@ -964,43 +1992,71 @@ with col1:
     # Prefer session-cached sensor values if present (after manual refresh)
     current_sensor = st.session_state.get('sensor_defaults', sensor_defaults)
     
-    # Input fields for crop recommendation
-    N = st.number_input("🟤 Nitrogen (N)", min_value=0, max_value=200, value=101, help="Nitrogen content in soil")
-    P = st.number_input("🟠 Phosphorus (P)", min_value=0, max_value=200, value=33, help="Phosphorus content in soil")
-    K = st.number_input("🟡 Potassium (K)", min_value=0, max_value=200, value=33, help="Potassium content in soil")
+    # Soil Nutrients Section
+    st.markdown("#### 🧪 Soil Nutrients (NPK)")
+    ncol1, ncol2, ncol3 = st.columns(3)
+    with ncol1:
+        N = st.number_input("Nitrogen (N)", min_value=0, max_value=200, value=101, help="Nitrogen content in soil (mg/kg)")
+    with ncol2:
+        P = st.number_input("Phosphorus (P)", min_value=0, max_value=200, value=33, help="Phosphorus content in soil (mg/kg)")
+    with ncol3:
+        K = st.number_input("Potassium (K)", min_value=0, max_value=200, value=33, help="Potassium content in soil (mg/kg)")
     
-    st.divider()
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     
+    # Environmental Conditions Section
+    st.markdown("#### 🌤️ Environmental Conditions")
     temp_val = current_sensor.get('temperature', temp_default)
     hum_val = current_sensor.get('humidity', hum_default)
-    temp = st.number_input("🌡️ Temperature (°C)", min_value=0.0, max_value=50.0, value=float(temp_val), help="Average temperature", disabled=auto_fill)
-    hum = st.number_input("💧 Humidity (%)", min_value=0.0, max_value=100.0, value=float(hum_val), help="Relative humidity", disabled=auto_fill)
-    ph = st.number_input("⚗️ Soil pH", min_value=0.0, max_value=14.0, value=6.91, help="Soil pH level")
-    rain = st.number_input("🌧️ Rainfall (mm)", min_value=0.0, max_value=300.0, value=142.86, help="Annual rainfall")
     
-    st.divider()
+    ecol1, ecol2 = st.columns(2)
+    with ecol1:
+        temp = st.number_input("🌡️ Temperature (°C)", min_value=0.0, max_value=50.0, value=float(temp_val), help="Average temperature", disabled=auto_fill)
+        ph = st.number_input("⚗️ Soil pH", min_value=0.0, max_value=14.0, value=6.91, help="Soil pH level (0-14)")
+    with ecol2:
+        hum = st.number_input("💧 Humidity (%)", min_value=0.0, max_value=100.0, value=float(hum_val), help="Relative humidity", disabled=auto_fill)
+        rain = st.number_input("🌧️ Rainfall (mm)", min_value=0.0, max_value=300.0, value=142.86, help="Annual rainfall")
     
-    # Additional inputs for irrigation models
-    # Use percentage (0-100) for soil moisture so downstream feature calculations
-    # that divide by 100 (to compute relative saturation) work as intended.
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+    
+    # Irrigation Parameters Section
+    st.markdown("#### 💦 Irrigation Parameters")
     soil_val = current_sensor.get('soil_moisture', soil_moisture_default)
-    soil_moisture = st.number_input(
-        "💧 Soil Moisture (%)",
-        min_value=0.0,
-        max_value=100.0,
-        value=float(soil_val),
-        step=0.1,
-        help="Soil moisture as percentage (0-100). Example: 35 means 35% volumetric water content",
-        disabled=auto_fill,
-    )
-    # wind_speed and pressure remain manual inputs (always editable)
-    wind_speed = st.number_input("🌬️ Wind Speed (km/h)", min_value=0.0, max_value=50.0, value=float(wind_speed_default), help="Wind speed")
-    pressure = st.number_input("🌡️ Pressure (kPa)", min_value=80.0, max_value=110.0, value=float(pressure_default), help="Atmospheric pressure")
+    
+    icol1, icol2, icol3 = st.columns(3)
+    with icol1:
+        soil_moisture = st.number_input(
+            "💧 Soil Moisture (%)",
+            min_value=0.0,
+            max_value=100.0,
+            value=float(soil_val),
+            step=0.1,
+            help="Volumetric water content (0-100%)",
+            disabled=auto_fill,
+        )
+    with icol2:
+        wind_speed = st.number_input("🌬️ Wind Speed (km/h)", min_value=0.0, max_value=50.0, value=float(wind_speed_default), help="Wind speed")
+    with icol3:
+        pressure = st.number_input("🌡️ Pressure (kPa)", min_value=80.0, max_value=110.0, value=float(pressure_default), help="Atmospheric pressure")
+    
+    # Input Summary Table
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+    with st.expander("📋 View Input Summary", expanded=False):
+        summary_data = {
+            "Parameter": ["Nitrogen", "Phosphorus", "Potassium", "Temperature", "Humidity", "pH", "Rainfall", "Soil Moisture", "Wind Speed", "Pressure"],
+            "Value": [f"{N} mg/kg", f"{P} mg/kg", f"{K} mg/kg", f"{temp}°C", f"{hum}%", f"{ph}", f"{rain} mm", f"{soil_moisture}%", f"{wind_speed} km/h", f"{pressure} kPa"],
+            "Status": ["✅" if auto_fill else "✏️"] * 10
+        }
+        st.dataframe(pd.DataFrame(summary_data), use_container_width=True, hide_index=True)
     
     # === SOIL TYPE CLASSIFICATION SECTION ===
-    st.divider()
-    st.header("🏞️ Soil Type Classification")
-    st.markdown("Upload a soil image to identify the soil type using AI")
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div class="custom-card">
+        <h3>🏞️ Soil Type Classification</h3>
+        <p style="color: #6c757d;">Upload an image to identify soil type using AI vision</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     uploaded_file = st.file_uploader("Choose a soil image...", type=["jpg", "jpeg", "png"], help="Upload a clear image of the soil surface")
     
@@ -1030,13 +2086,18 @@ with col1:
                     if error:
                         st.error(f"❌ Classification failed: {error}")
                     else:
-                        st.success("✅ Classification Complete!")
-                        
-                        # Display result in a nice card (without confidence)
+                        # Display result in a professional card
+                        confidence_class = "confidence-high" if confidence >= 0.8 else ("confidence-medium" if confidence >= 0.6 else "confidence-low")
                         st.markdown(f"""
-                        <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; text-align: center; margin: 20px 0;">
-                            <h2 style="color: #2e7d32; margin: 0;">🌍 Predicted Soil Type</h2>
-                            <h1 style="color: #1976d2; margin: 10px 0; font-size: 3em;">{soil_type}</h1>
+                        <div class="result-card">
+                            <div class="result-header">
+                                <div class="result-icon">🌍</div>
+                                <div>
+                                    <div class="result-title">Soil Classification</div>
+                                    <span class="confidence-badge {confidence_class}">Confidence: {confidence*100:.1f}%</span>
+                                </div>
+                            </div>
+                            <div class="result-value">{soil_type} Soil</div>
                         </div>
                         """, unsafe_allow_html=True)
                         
@@ -1062,12 +2123,24 @@ with col1:
                         st.success("💡 **Tip**: For best results, use clear, well-lit images showing the soil texture and color clearly.")
 
 with col2:
-    st.header("🎯 Recommendations & Decisions")
+    st.markdown("""
+    <div class="glass-card animate-slide-in">
+        <div class="glass-card-header">
+            <span class="glass-card-icon">🎯</span>
+            <div>
+                <h3 class="glass-card-title">AI-Powered Recommendations</h3>
+                <p class="glass-card-subtitle">Enterprise-grade crop and irrigation intelligence</p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
     # Developer debug toggle: show raw inputs/outputs on the page
-    show_debug = st.checkbox("🔧 Show raw inputs & model outputs", value=False, key="show_debug")
+    show_debug = st.checkbox("🔧 Debug Mode", value=False, key="show_debug", help="Show technical details and raw model outputs")
     
     # === CROP RECOMMENDATION SECTION ===
-    st.subheader("🌱 Crop Recommendation")
+    st.markdown('<div class="premium-divider"></div>', unsafe_allow_html=True)
+    st.markdown("### 🌱 Crop Recommendation")
     
     if st.button("🚀 Get Crop Recommendation", type="primary", width="stretch", key="crop_recommendation"):
         # Check if crop model is loaded
@@ -1117,9 +2190,22 @@ with col2:
 
                 # Display results only if prediction was successful
                 if prediction != 'unknown':
-                    st.success(f"🌱 **Recommended Crop: {prediction.title()}**")
-                    if confidence is not None:
-                        st.info(f"🎯 **Confidence: {confidence:.2%}**")
+                    # Professional result card
+                    conf_value = confidence if confidence is not None else 0.0
+                    confidence_class = "confidence-high" if conf_value >= 0.8 else ("confidence-medium" if conf_value >= 0.6 else "confidence-low")
+                    
+                    st.markdown(f"""
+                    <div class="result-card">
+                        <div class="result-header">
+                            <div class="result-icon">🌾</div>
+                            <div>
+                                <div class="result-title">Recommended Crop</div>
+                                <span class="confidence-badge {confidence_class}">Confidence: {conf_value*100:.1f}%</span>
+                            </div>
+                        </div>
+                        <div class="result-value">{prediction.title()}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
                     
                     # Add crop information
                     crop_info = {
@@ -1200,10 +2286,23 @@ with col2:
                 # Display irrigation decision
                 irrigation_needed = (pred == 1 or pred == 'irrigate')
                 
+                # Professional irrigation decision card
+                prob_value = prob if prob is not None else 0.0
+                confidence_class = "confidence-high" if prob_value >= 0.8 else ("confidence-medium" if prob_value >= 0.6 else "confidence-low")
+                
                 if irrigation_needed:
-                    st.success(f"✅ **Irrigation Needed**")
-                    if prob is not None:
-                        st.info(f"🎯 **Confidence: {prob:.2%}**")
+                    st.markdown(f"""
+                    <div class="result-card">
+                        <div class="result-header">
+                            <div class="result-icon">💧</div>
+                            <div>
+                                <div class="result-title">Irrigation Decision</div>
+                                <span class="confidence-badge {confidence_class}">Confidence: {prob_value*100:.1f}%</span>
+                            </div>
+                        </div>
+                        <div class="result-value">Irrigation Needed</div>
+                    </div>
+                    """, unsafe_allow_html=True)
                     
                     # STEP 2: Calculate Optimal Irrigation Amount (only if irrigation is needed)
                     st.markdown("### ⚡ Step 2: Optimal Irrigation Amount")
@@ -1242,50 +2341,86 @@ with col2:
                                 st.error("❌ **INVALID OPTIMIZATION RESULT**")
                                 st.info("🔄 **Returned Value**: 0 (Validation fail-safe)")
                             else:
-                                st.success(f"💧 **Recommended Irrigation: {optimization_pred:.2f} units**")
+                                # Display optimal amount in styled card
+                                st.markdown(f"""
+                                <div class="result-card">
+                                    <div class="result-header">
+                                        <div class="result-icon">💦</div>
+                                        <div>
+                                            <div class="result-title">Optimal Irrigation Amount</div>
+                                        </div>
+                                    </div>
+                                    <div class="result-value">{optimization_pred:.2f} units</div>
+                                </div>
+                                """, unsafe_allow_html=True)
                                 
-                                # Summary box
-                                st.success(f"""
-                                ### 🎯 Irrigation Summary
-                                - **Decision**: Irrigation Required ✅
-                                - **Optimal Amount**: {optimization_pred:.2f} units
-                                - **Confidence**: {prob:.2%} (Classification)
-                                """)
+                                # Summary box with modern styling
+                                st.markdown(f"""
+                                <div class="success-box">
+                                    <h4 style="margin-top: 0; color: var(--secondary-green);">🎯 Irrigation Summary</h4>
+                                    <ul style="margin-bottom: 0;">
+                                        <li><strong>Decision:</strong> Irrigation Required ✅</li>
+                                        <li><strong>Optimal Amount:</strong> {optimization_pred:.2f} units</li>
+                                        <li><strong>Confidence:</strong> {prob_value*100:.1f}%</li>
+                                    </ul>
+                                </div>
+                                """, unsafe_allow_html=True)
                                 
                         except Exception as e:
                             st.error(f"❌ **OPTIMIZATION FAILED**: {str(e)}")
                             st.info("🔄 **Returned Value**: 0 (Exception fail-safe)")
                 else:
-                    st.info(f"🚫 **No Irrigation Needed**")
-                    if prob is not None:
-                        st.info(f"🎯 **Confidence: {prob:.2%}**")
+                    # No irrigation needed card
+                    st.markdown(f"""
+                    <div class="result-card">
+                        <div class="result-header">
+                            <div class="result-icon">✋</div>
+                            <div>
+                                <div class="result-title">Irrigation Decision</div>
+                                <span class="confidence-badge {confidence_class}">Confidence: {prob_value*100:.1f}%</span>
+                            </div>
+                        </div>
+                        <div class="result-value">No Irrigation Needed</div>
+                    </div>
+                    """, unsafe_allow_html=True)
                     
-                    # Display recommended units as 0
-                    st.success("💧 **Recommended Irrigation: 0.00 units**")
-                    st.info("✅ Soil conditions are adequate - no irrigation required at this time")
+                    # Info box
+                    st.markdown("""
+                    <div class="info-box">
+                        <p style="margin: 0;"><strong>✅ Soil conditions are adequate</strong> - No irrigation required at this time</p>
+                    </div>
+                    """, unsafe_allow_html=True)
                     
                     # Summary box
-                    st.success(f"""
-                    ### 🎯 Irrigation Summary
-                    - **Decision**: No Irrigation Required ✅
-                    - **Recommended Amount**: 0.00 units
-                    - **Confidence**: {prob:.2%} (Classification)
-                    - **Reason**: Soil moisture and environmental conditions are adequate
-                    """)
+                    st.markdown(f"""
+                    <div class="success-box">
+                        <h4 style="margin-top: 0; color: var(--secondary-green);">🎯 Irrigation Summary</h4>
+                        <ul style="margin-bottom: 0;">
+                            <li><strong>Decision:</strong> No Irrigation Required ✅</li>
+                            <li><strong>Recommended Amount:</strong> 0.00 units</li>
+                            <li><strong>Confidence:</strong> {prob_value*100:.1f}%</li>
+                        </ul>
+                    </div>
+                    """, unsafe_allow_html=True)
                         
             except Exception as e:
                 st.error(f"❌ **IRRIGATION ANALYSIS FAILED**: {str(e)}")
                 st.info("🔄 **Returned Value**: 0 (Exception fail-safe)")
 
-    st.divider()
-    st.subheader("🤖 Gemini Chatbot")
-    st.markdown("Get quick crop & irrigation tips powered by Gemini.")
+    # Gemini AI Section
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div class="custom-card">
+        <h3>🤖 AI Assistant (Gemini)</h3>
+        <p style="color: #6c757d;">Get expert agricultural advice and personalized recommendations</p>
+    </div>
+    """, unsafe_allow_html=True)
 
     gemini_prompt = st.text_area(
-        "💬 Enter your question or request",
+        "💬 Ask me anything about crops, irrigation, or farming",
         placeholder="Example: What's the best way to irrigate rice during a heat wave?",
         key="gemini_prompt",
-        height=120
+        height=100
     )
 
     context_snippet = (
@@ -1356,18 +2491,79 @@ with col2:
                     except Exception:
                         pass
 
-# Display input summary at the bottom
-st.subheader("📋 Input Summary")
-summary_data = {
-    'Parameter': ['Nitrogen', 'Phosphorus', 'Potassium', 'Temperature', 'Humidity', 'pH', 'Rainfall', 'Soil Moisture', 'Wind Speed', 'Pressure'],
-    'Value': [f"{N}", f"{P}", f"{K}", f"{temp}°C", f"{hum}%", f"{ph}", f"{rain}mm", f"{soil_moisture}%", f"{wind_speed}km/h", f"{pressure}kPa"],
-    'Status': ['✅' if val > 0 else '⚠️' for val in [N, P, K, temp, hum, ph, rain, soil_moisture, wind_speed, pressure]]
-}
+# Professional Footer
+st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+st.markdown("""
+<div style="text-align: center; padding: 2rem 0; color: #6c757d;">
+    <h3 style="color: var(--primary-green); margin-bottom: 1rem;">🌱 AgriTech Smart Advisor</h3>
+    <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">Empowering farmers with AI-driven precision agriculture</p>
+    <p style="font-size: 0.9rem; opacity: 0.8;">💡 Intelligent Crop Recommendations • Smart Irrigation Management • Real-time IoT Monitoring</p>
+</div>
+""", unsafe_allow_html=True)
 
-summary_df = pd.DataFrame(summary_data)
-st.dataframe(summary_df, hide_index=True, width="stretch")
-
-# Footer
-st.markdown("---")
-st.markdown("**AgriTech - Smart Agriculture Advisor** - Empowering farmers with AI-driven crop and irrigation insights")
-st.markdown("💡 *Tip: Adjust the input parameters to see how they affect the recommendations*")
+# Add sidebar with additional information
+with st.sidebar:
+    st.markdown("""
+    <div style="text-align: center; padding: 1rem 0;">
+        <h2 style="color: white;">🌱 AgriTech</h2>
+        <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">Smart Agriculture Platform</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div style="color: white;">
+        <h3 style="color: #f4a535;">📊 System Features</h3>
+        <ul style="color: rgba(255,255,255,0.9);">
+            <li>🌾 AI Crop Recommendation</li>
+            <li>💧 Smart Irrigation Analysis</li>
+            <li>🏞️ Soil Type Classification</li>
+            <li>📡 IoT Sensor Integration</li>
+            <li>🤖 AI Agricultural Assistant</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div style="color: white;">
+        <h3 style="color: #f4a535;">💡 Quick Tips</h3>
+        <ul style="color: rgba(255,255,255,0.9); font-size: 0.9rem;">
+            <li>Enable IoT auto-fill for real-time data</li>
+            <li>Upload clear soil images for accurate classification</li>
+            <li>Adjust parameters to explore different scenarios</li>
+            <li>Use the AI assistant for personalized advice</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+    
+    # Model Status in sidebar
+    st.markdown("""
+    <div style="color: white;">
+        <h3 style="color: #f4a535;">🔧 Model Status</h3>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    for model_name, status in MODEL_STATUS.items():
+        status_icon = "✅" if status else "❌"
+        status_color = "#4CAF50" if status else "#f44336"
+        display_name = model_name.replace('_', ' ').title()
+        st.markdown(f"""
+        <div style="color: white; padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.2rem;">{status_icon}</span>
+            <span style="font-size: 0.9rem;">{display_name}</span>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem; text-align: center; padding-top: 1rem;">
+        <p>© 2025 AgriTech Platform</p>
+        <p>Version 2.0</p>
+    </div>
+    """, unsafe_allow_html=True)
