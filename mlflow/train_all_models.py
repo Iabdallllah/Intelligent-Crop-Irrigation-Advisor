@@ -16,18 +16,24 @@ PROJECT_ROOT = Path(__file__).parent.parent.absolute()
 MODELS = {
     "crop_recommendation": {
         "name": "Crop Recommendation Model",
-        "path": PROJECT_ROOT / "models" / "crop recommendation" / "model_training.py",
-        "description": "RandomForest classifier for crop recommendation based on soil and weather conditions"
+        "path": PROJECT_ROOT / "models" / "crop_recommendation" / "model_training.ipynb",
+        "description": "RandomForest classifier for crop recommendation based on soil and weather conditions",
+        "skip": True  # Skip notebook files
     },
     "irrigation_optimization": {
         "name": "Irrigation Optimization Model",
-        "path": PROJECT_ROOT / "models" / "irrigation_optimization_model" / "train.py",
+        "path": PROJECT_ROOT / "models" / "irrigation_optimization" / "train.py",
         "description": "CatBoost regressor for optimal irrigation water amount prediction"
     },
     "smart_irrigation_classifier": {
         "name": "Smart Irrigation Classifier",
-        "path": PROJECT_ROOT / "models" / "Smart_Irrigation_Classifier" / "train_model.py",
+        "path": PROJECT_ROOT / "models" / "irrigation_optimization" / "train_classifier.py",
         "description": "CatBoost classifier with Optuna optimization for irrigation status classification"
+    },
+    "soil_classification": {
+        "name": "Soil Classification Model",
+        "path": PROJECT_ROOT / "models" / "soil_classification" / "train_soil_model.py",
+        "description": "CNN model for soil type classification from images"
     }
 }
 
@@ -39,10 +45,20 @@ def print_header(text, char="="):
 
 def train_model(model_key, model_info):
     """Train a single model."""
+    # Skip if marked to skip
+    if model_info.get('skip', False):
+        print(f"⏭️  Skipping {model_info['name']} (notebook file)")
+        return True
+        
     print_header(f"Training {model_info['name']}", "=")
     print(f"📝 Description: {model_info['description']}")
     print(f"📂 Script: {model_info['path']}")
     print()
+    
+    # Check if file exists
+    if not model_info['path'].exists():
+        print(f"❌ Error: Training script not found at {model_info['path']}")
+        return False
     
     start_time = time.time()
     

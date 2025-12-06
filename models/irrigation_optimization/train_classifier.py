@@ -14,8 +14,9 @@ import sys
 import os
 
 # Add project root to path
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../mlflow_tools'))
+project_root_dir = os.path.join(os.path.dirname(__file__), '../..')
+sys.path.insert(0, project_root_dir)
+sys.path.insert(0, os.path.join(project_root_dir, 'mlflow'))
 from mlflow_config import setup_mlflow, log_dataset_info
 
 # ===============================
