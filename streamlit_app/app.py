@@ -1,3 +1,4 @@
+# GitHub: https://github.com/Iabdallllah/Intelligent-Crop-Irrigation-Advisor
 import streamlit as st
 import joblib
 import numpy as np
